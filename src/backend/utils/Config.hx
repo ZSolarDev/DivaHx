@@ -10,15 +10,15 @@ class Config {
     };
 
     public static function bind() {
-        var hasConfig = FileSystem.exists('./config.mms');
+        var hasConfig = FileSystem.exists('./config.dhxc');
         if (hasConfig) {
-            data = Json.parse(File.getContent('./config.mms'));
+            data = Json.parse(File.getContent('./config.dhxc'));
         } else
             flush();
     }
 
     public static function flush() {
-        File.saveContent('./config.mms', Json.stringify(data, null, '   '));
+        File.saveContent('./config.dhxc', Json.stringify(data, null, '   '));
     }
 }
 

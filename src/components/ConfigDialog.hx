@@ -1,5 +1,6 @@
 package components;
 
+import backend.VerifyMM;
 import haxe.ui.components.Button;
 import openfl.display.Bitmap;
 import openfl.display.DisplayObjectContainer;
@@ -30,10 +31,22 @@ class ConfigDialog extends Dialog {
                 mmpath.text = path;
         }
         onDialogClosed = (e) -> {
-            HLNativeWindow.setWindowTitlebarColor(0x3d3f41);
             if (e.button == DialogButton.APPLY) {
-                Config.data.mmPath = mmpath.text;
-                Config.flush();
+                var path = mmpath.text;
+                var valid = VerifyMM.verifyInstallation(path);
+                if (!valid.isValid && path.length > 0) {
+                    var err = new ErrorDialog('Invalid MM+ Installation', valid.details, false, () -> {
+                        var newDialog = new ConfigDialog();
+                        newDialog.showDialog();
+                    });
+                    err.showDialog();
+                } else {
+                    Config.data.mmPath = path;
+                    Config.flush();
+                    HLNativeWindow.setWindowTitlebarColor(0x3d3f41);
+                }
+            } else {
+                HLNativeWindow.setWindowTitlebarColor(0x3d3f41);
             }
         }
     }
