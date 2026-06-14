@@ -1,12 +1,16 @@
-<draggable-tableview width="500" height="500">
+<draggable-tableview width="700" height="630">
     <header width="100%">
         <column id="colEnabled" text="Enabled" width="70" />
         <column id="colName" text="Mod Name" width="100%" />
+        <column id="colSize" text="Size" width="100%" />
     </header>
     <item-renderer verticalAlign="center" horizontalAlign="center">
         <checkbox id="colEnabled" />
     </item-renderer>
     <item-renderer verticalAlign="center">
         <label id="colName" width="100%" />
+    </item-renderer>
+    <item-renderer verticalAlign="center">
+        <label id="colSize" width="100%" />
     </item-renderer>
 </draggable-tableview>
