@@ -1,19 +1,18 @@
 <vbox width="100%" height="100%" styleName="default-background">
     <tabview id="mainTabs" width="100%" height="100%">
-        <hbox text="Manage Mods" icon="resources/icons/adjustments.svg" id="modManager" width="100%" height="660" style=".icon { width: 40px; height: 40px; } padding: 10px; spacing: 10px;">
-            
-            <frame text="Mod List" width="100%" height="660">
+        <hbox text="Manage Mods" icon="resources/icons/adjustments.svg" id="modManager" percentWidth="100" percentHeight="100" style="padding: 10px; spacing: 10px;">
+            <frame text="Mod List" percentWidth="100" percentHeight="100">
                 <modlist id="modList" />
             </frame>
             
-            <vbox width="300" height="100%" verticalAlign="top" style="spacing: 10px;">
+            <vbox width="300" percentHeight="100" verticalAlign="top" style="spacing: 10px;">
                 <frame text="Play" width="100%">
                     <vbox width="100%" style="padding: 5px; spacing: 5px;">
                         <button text="Play (Steam)" id="playSteam" icon="resources/icons/steam.svg" style=".icon { width: 40px; height: 40px; }" width="100%"/>
                         <button text="Play (Executable)" id="playExe" icon="resources/icons/play.svg" style=".icon { width: 40px; height: 40px; }" width="100%"/>
                     </vbox>
                 </frame>
-                
+
                 <frame text="Misc Config" width="100%">
                     <vbox width="100%" style="padding: 5px; spacing: 5px;">
                         <checkbox text="Mods Enabled" id="modsEnabled" selected="true" />
@@ -21,14 +20,22 @@
                     </vbox>
                 </frame>
 
-                <box width="100%" height="260" verticalAlign="bottom" horizontalAlign="center" style="padding-top: 10px;">
-                    <image resource="resources/logo/Logo500.png" width="260" height="260" verticalAlign="center" horizontalAlign="center" style="image-scale-mode: fit-size; horizontal-align: center; vertical-align: center;" />
-                </box>
+                <frame text="DivaHX" width="100%">
+                    <vbox width="100%" style="padding: 10px; spacing: 15px;">
+                        <box width="100%" height="261" style="horizontal-align: center;">
+                            <image resource="resources/logo/Logo500.png" width="260" height="260" style="image-scale-mode: fit-size; horizontal-align: center;" />
+                        </box>
+                        <vbox width="100%" style="spacing: 10px;">
+                            <button text="Open DivaHx Github" id="githubButton" icon="resources/icons/github.svg" style=".icon { width: 40px; height: 40px; } padding-bottom: 10px;" width="100%" />
+                            <label htmlText="DivaHx V?.?.?&#10;<font color='#888888' size='14'>Created by ZSolarDev with Haxe</font>" width="100%" textAlign="center" style="font-size: 17px; padding-top: 10px;" id="metadataText" />
+                        </vbox>
+                    </vbox>
+                </frame>
             </vbox>
         </hbox>
         
-        <box text="Configuration" icon="resources/icons/gear.svg" style=".icon { width: 40px; height: 40px; }" id="configTab" width="100%" height="100%">
-            <configuration id="config" width="100%" height="100%" />
+        <box text="Configuration" icon="resources/icons/gear.svg" style=".icon { width: 40px; height: 40px; }" id="configTab" percentWidth="100" percentHeight="100">
+            <configuration id="config" percentWidth="100" percentHeight="100" />
         </box>
     </tabview>
 </vbox>

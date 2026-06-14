@@ -1,18 +1,18 @@
 package;
 
-import sys.io.Process;
+import lime.app.Application;
+import haxe.ui.events.UIEvent;
+import haxe.ui.core.Screen;
 import backend.utils.Update;
 import haxe.runtime.Copy;
 import sys.FileSystem;
 import haxe.io.Path;
 import sys.io.File;
 import haxe.ui.data.ArrayDataSource;
-import openfl.events.Event;
 import backend.utils.Validate;
 import backend.utils.Config;
 import haxe.ui.containers.VBox;
 import backend.utils.TomlParser;
-import openfl.Lib;
 
 using StringTools;
 
@@ -36,6 +36,10 @@ class MainView extends VBox {
         playExe.onClick = (_) -> {
             Sys.command('cmd /c start "" "${Path.join([Config.data.mmPath, 'DivaMegaMix.exe'])}"');
         }
+        githubButton.onClick = (_) -> {
+            Sys.command('cmd /c start "" "https://github.com/ZSolarDev/DivaHX"');
+        }
+        metadataText.htmlText = 'DivaHx V${Application.current.meta.get('version')}&#10;<font color="#888888" size="14">Created by ZSolarDev with Haxe</font>';
         Update.register(this, update);
     }
 

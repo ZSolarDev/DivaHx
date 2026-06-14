@@ -1,4 +1,4 @@
-<draggable-tableview width="939" height="631">
+<draggable-tableview width="100%" height="100%">
     <header width="100%">
         <column id="colEnabled" text="Enabled" width="70" />
         <column id="colName" text="Mod Name" width="100%" />
