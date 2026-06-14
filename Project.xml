@@ -10,7 +10,7 @@
     <icon path="resources/logo/Logo30.png" size="3000" />
 
     <window background="#2c2f30" fps="120" />
-    <window width="1280" height="720" min-width="1280" min-height="720" if="desktop" />
+    <window width="1280" height="720" if="desktop" />
     <window width="0" height="0" if="html5" />
 
     <!-- classpath, haxe libs -->
