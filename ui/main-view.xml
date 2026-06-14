@@ -1,30 +1,34 @@
 <vbox width="100%" height="100%" styleName="default-background">
-    <hbox width="100%" height="100%">
-        <tabview id="mainTabs" width="100%" height="100%">
-            <box text="Manage Mods" icon="resources/icons/adjustments.svg" style=".icon { width: 40px; height: 40px; }" id="modManager" height="100%" width="1280">
-                <hbox width="100%" height="100%" style="padding-top: 5px;">
-                    <frame text="Mod List">
-                        <modlist id="modList" />
-                    </frame>
-                    <vbox style="padding: 5px; width: 450; height: 1280;" horizontalAlign="center">
-                        <frame text="Play">
-                            <vbox>
-                                <button text="Play (Steam)" id="playSteam" icon="resources/icons/steam.svg" style=".icon { width: 40px; height: 40px; }"/>
-                                <button text="Play (Executable)" id="playExe" icon="resources/icons/play.svg" style=".icon { width: 40px; height: 40px; }" />
-                            </vbox>
-                        </frame>
-                        <frame text="Misc Config">
-                            <vbox>
-                                <checkbox text="Mods Enabled" id="modsEnabled" selected="true" />
-                                <checkbox text="Console" id="console" selected="false" />
-                            </vbox>
-                        </frame>
+    <tabview id="mainTabs" width="100%" height="100%">
+        <hbox text="Manage Mods" icon="resources/icons/adjustments.svg" id="modManager" width="100%" height="660" style=".icon { width: 40px; height: 40px; } padding: 10px; spacing: 10px;">
+            
+            <frame text="Mod List" width="100%" height="660">
+                <modlist id="modList" />
+            </frame>
+            
+            <vbox width="300" height="100%" verticalAlign="top" style="spacing: 10px;">
+                <frame text="Play" width="100%">
+                    <vbox width="100%" style="padding: 5px; spacing: 5px;">
+                        <button text="Play (Steam)" id="playSteam" icon="resources/icons/steam.svg" style=".icon { width: 40px; height: 40px; }" width="100%"/>
+                        <button text="Play (Executable)" id="playExe" icon="resources/icons/play.svg" style=".icon { width: 40px; height: 40px; }" width="100%"/>
                     </vbox>
-                </hbox>
-            </box>
-            <box text="Configuration" icon="resources/icons/gear.svg" style=".icon { width: 40px; height: 40px; }" id="configTab" height="100%">
-                <configuration id="config" />
-            </box>
-        </tabview>
-    </hbox>
+                </frame>
+                
+                <frame text="Misc Config" width="100%">
+                    <vbox width="100%" style="padding: 5px; spacing: 5px;">
+                        <checkbox text="Mods Enabled" id="modsEnabled" selected="true" />
+                        <checkbox text="Console" id="console" selected="false" />
+                    </vbox>
+                </frame>
+
+                <box width="100%" height="260" verticalAlign="bottom" horizontalAlign="center" style="padding-top: 10px;">
+                    <image resource="resources/logo/Logo500.png" width="260" height="260" verticalAlign="center" horizontalAlign="center" style="image-scale-mode: fit-size; horizontal-align: center; vertical-align: center;" />
+                </box>
+            </vbox>
+        </hbox>
+        
+        <box text="Configuration" icon="resources/icons/gear.svg" style=".icon { width: 40px; height: 40px; }" id="configTab" width="100%" height="100%">
+            <configuration id="config" width="100%" height="100%" />
+        </box>
+    </tabview>
 </vbox>
