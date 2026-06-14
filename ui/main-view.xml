@@ -1,9 +1,12 @@
 <vbox width="100%" height="100%" styleName="default-background">
-    <hbox width="100%">
-        <menubar width="100%" id="hehe">
-            <menu text="Configuration" id="config" icon="resources/icons/gear.svg" style=".icon { width: 40px; height: 40px; }"/>
-            <spacer width="100%" />
-            <label text="" style="opacity: 0;" />
-        </menubar>
+    <hbox width="100%" height="100%">
+        <tabview id="mainTabs" width="100%" height="100%">
+            <box text="Manage Mods" icon="resources/icons/gear.svg" style=".icon { width: 40px; height: 40px; }" id="modManager" height="100%">
+                <modlist id="modList" />
+            </box>
+            <box text="Configuration" icon="resources/icons/gear.svg" style=".icon { width: 40px; height: 40px; }" id="configTab" height="100%">
+                <configuration id="config" />
+            </box>
+        </tabview>
     </hbox>
 </vbox>

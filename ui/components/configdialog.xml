@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8" ?>
-<dialog width="500" title="Configuration">
-    <vbox style="padding: 5px; width: 100%;">
-        <button text="Set MM+ path" id="setmmpath" icon="resources/icons/folder-open.svg" style=".icon { width: 40px; height: 40px; }" width="35%" />
-        <textfield placeholder="MM+ path here..." id="mmpath" height="28px" width="100%" />
-    </vbox>
-</dialog>

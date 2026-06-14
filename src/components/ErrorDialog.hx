@@ -8,14 +8,14 @@ class ErrorDialog extends Dialog {
     public function new(title:String, message:String, resetTitlebarColorOnClose:Bool = true, onClose:Void->Void = null) {
         super();
         haxe.Timer.delay(function() {
-            HLNativeWindow.setWindowTitlebarColor(0x212324);
+            HLNativeWindow.setWindowTitlebarColor(0x1d1f20);
         }, 25);
         this.title = title;
         errorMessage.text = parseErrorText(message);
         buttons = DialogButton.OK;
         onDialogClosed = (_) -> {
             if (resetTitlebarColorOnClose)
-                HLNativeWindow.setWindowTitlebarColor(0x3d3f41);
+                HLNativeWindow.setWindowTitlebarColor(0x2c2f30);
             if (onClose != null) {
                 onClose();
             }

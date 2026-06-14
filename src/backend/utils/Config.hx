@@ -13,8 +13,12 @@ class Config {
         var hasConfig = FileSystem.exists('./config.dhxc');
         if (hasConfig) {
             data = Json.parse(File.getContent('./config.dhxc'));
-        } else
+        } else {
+            var possiblePath = '${Sys.getCwd().charAt(0)}:/Program Files (x86)/Steam/steamapps/common/Hatsune Miku Project DIVA Mega Mix Plus';
+            if (FileSystem.exists(possiblePath))
+                data.mmPath = possiblePath;
             flush();
+        }
     }
 
     public static function flush() {

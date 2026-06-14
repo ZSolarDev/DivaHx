@@ -1,0 +1,7 @@
+<module>
+    <components>
+        <component class="components.DraggableTableView" />
+        <component class="components.Configuration" />
+        <component class="components.ModList" />
+    </components>
+</module>

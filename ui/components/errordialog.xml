@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8" ?>
 <dialog width="650" title="$title">
     <vbox style="padding: 10px; width: 100%;">
         <hbox verticalAlign="center" style="padding-bottom: 10px; width: 100%;">
