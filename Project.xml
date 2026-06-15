@@ -22,6 +22,10 @@
     <haxelib name="actuate" />
     <haxelib name="svg" />
     <haxelib name="hlwnative" />
+    <!-- haxelib git haxetoml https://github.com/ZSolarDev/haxetoml -->
+    <!-- I DID NOT MAKE haxetoml!! yhslai DID: https://github.com/yhslai/haxetoml -->
+    <!-- I forked it so I could use it like a haxelib! -->
+    <haxelib name="haxetoml" />
     <haxelib name="hxfilemanager" />
 
     <haxelib name="haxeui-core" />

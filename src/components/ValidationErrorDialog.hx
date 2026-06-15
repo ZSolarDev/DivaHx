@@ -4,10 +4,12 @@ import haxe.ui.containers.dialogs.Dialog;
 import hlwnative.HLNativeWindow;
 
 @:build(haxe.ui.macros.ComponentMacros.build("ui/components/errordialog.xml"))
-class ErrorDialog extends Dialog {
+class ValidationErrorDialog extends Dialog {
+    public var onClose:Void->Void = null;
     public function new(title:String, message:String, resetTitlebarColorOnClose:Bool = true, onClose:Void->Void = null) {
         super();
-        haxe.Timer.delay(function() {
+        this.onClose = onClose;
+        haxe.Timer.delay(() -> {
             HLNativeWindow.setWindowTitlebarColor(0x1d1f20);
         }, 25);
         this.title = title;
@@ -16,8 +18,8 @@ class ErrorDialog extends Dialog {
         onDialogClosed = (_) -> {
             if (resetTitlebarColorOnClose)
                 HLNativeWindow.setWindowTitlebarColor(0x2c2f30);
-            if (onClose != null) {
-                onClose();
+            if (this.onClose != null) {
+                this.onClose();
             }
         }
     }

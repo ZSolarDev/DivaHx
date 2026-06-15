@@ -34,7 +34,7 @@ class Configuration extends VBox {
             var path = mmpath.text;
             var valid = Validate.validateInstallation(path);
             if (!valid.isValid && path.length > 0) {
-                var err = new ErrorDialog('Invalid MM+ Installation', valid.details, true, () -> {
+                var err = new ValidationErrorDialog('Invalid MM+ Installation', valid.details, true, () -> {
                     mmpath.text = Config.data.mmPath;
                 });
                 err.showDialog();
@@ -44,7 +44,7 @@ class Configuration extends VBox {
             }
         }
         resetButton.onClick = (_) -> {
-            haxe.Timer.delay(function() {
+            haxe.Timer.delay(() -> {
                 HLNativeWindow.setWindowTitlebarColor(0x1d1f20);
             }, 25);
             Dialogs.messageBox('Are you sure you want to reset your configuration?', 'Reset Configuration', 'yesno', true, (button) -> {

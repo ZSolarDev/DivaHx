@@ -1,5 +1,6 @@
 package;
 
+import openfl.Lib;
 import lime.app.Application;
 import haxe.ui.events.UIEvent;
 import haxe.ui.core.Screen;
@@ -12,7 +13,7 @@ import haxe.ui.data.ArrayDataSource;
 import backend.utils.Validate;
 import backend.utils.Config;
 import haxe.ui.containers.VBox;
-import backend.utils.TomlParser;
+import haxetoml.TomlParser;
 
 using StringTools;
 
@@ -25,6 +26,7 @@ class MainView extends VBox {
     public var oldConsole:Bool = false;
 
     public function new() {
+        Lib.application.window.setMinSize(720, 720);
         super();
         var isValid = Validate.isValidMMPath();
         modManager.disabled = !isValid;
