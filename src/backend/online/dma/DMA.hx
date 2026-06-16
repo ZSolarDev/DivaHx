@@ -18,7 +18,7 @@ class DMA {
                 var parsedMods:Array<DMAMod> = Json.parse(jsonText);
                 res.mods = parsedMods;
             } catch (e) {
-                http.onError('Failed to parse mods!\nERROR:\n${e.message}\nSTACK:\n${e.stack.toString()}');
+                http.onError('Failed to parse mods!\nERROR: ${e.message}\nSTACK:${e.stack.toString()}');
             }
         }
         http.onError = (error:String) -> {
@@ -33,7 +33,7 @@ class DMA {
         var url = 'https://divamodarchive.com/api/v1/posts';
         // Search query
         if (query != '')
-            url += '?query=$query';
+            url += '?query=${query.urlEncode()}';
 
         // Sort
         url += '&sort=$sort';
@@ -57,7 +57,6 @@ class DMA {
         // Limit
         url += '&limit=$limit';
 
-        trace('DMA URL: ' + url);
         return url;
     }
 }
