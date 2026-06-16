@@ -1,5 +1,6 @@
 package backend.utils;
 
+import haxe.io.Path;
 import sys.FileSystem;
 import sys.io.File;
 import sys.io.FileOutput;
@@ -14,7 +15,7 @@ class SingleInstance {
         if (lockDir == null || lockDir == "") lockDir = Sys.getEnv("TMPDIR");
         if (lockDir == null || lockDir == "") lockDir = "./";
 
-        lockPath = lockDir + "/DivaHX_boot.lock";
+        lockPath = Path.join([lockDir, "DivaHX_boot.lock"]);
 
         // 1. If it doesn't exist at all, we are the first instance
         if (!FileSystem.exists(lockPath))
@@ -25,7 +26,7 @@ class SingleInstance {
         // If the first instance is alive, the OS blocks the system command and returns an error code (!= 0)
         var sysCheckCode = 1;
         try {
-            sysCheckCode = Sys.command("cmd.exe", ["/c", 'echo test >> "${lockPath}"']);
+            sysCheckCode = Sys.command('echo test >> "${lockPath}"');
         } catch(e:Dynamic) {
             sysCheckCode = 0; // Fallback if system shell execution fails
         }
