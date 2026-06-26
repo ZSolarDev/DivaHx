@@ -20,6 +20,7 @@ import sys.FileSystem;
 import sys.io.File;
 import sys.io.FileOutput;
 import lime.app.Application;
+import hxFileManager.FileManager;
 
 class Main {
     public static var app:HaxeUIApp;
@@ -41,6 +42,7 @@ class Main {
     }
 
     private static function init() {
+        FileManager.init();
         HLNativeWindow.setWindowTitlebarColor(0x2c2f30);
         Config.bind();
         Validate.invalidateMMPath();

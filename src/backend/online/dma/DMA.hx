@@ -36,7 +36,7 @@ class DMA {
             url += '?query=${query.urlEncode()}';
 
         // Sort
-        url += '&sort=$sort';
+        url += '${(query != '' ? '&' : '?')}sort=$sort';
 
         // The filter is meilisearch boolean logic syntax
         var typesStr = '';

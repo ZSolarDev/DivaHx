@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <project>
-    <meta title="DivaHx" package="" version="1.0.0" company="ZSolarDev" />
+    <meta title="DivaHx" package="com.zsd.divahx" version="1.0.0" company="ZSolarDev" />
     <app main="Main" file="DivaHx" path="build/openfl" />
     <set name="BUILD_DIR" value="build/openfl" />
     <icon path="resources/logo/Logo50.png" size="50" />
@@ -13,10 +13,15 @@
     <window width="1280" height="720" if="desktop" />
     <window width="0" height="0" if="html5" />
 
-    <!-- classpath, haxe libs -->
+    <!-- classpath, assets, haxe libs -->
     <source path="src" />
     <classpath name="src" />
     <assets path="resources" />
+    <!-- I renamed it to hlruntime.exe because hl.exe is automatically deleted on build. -->
+    <assets path="hl/hl.exe" rename="hlruntime.exe" type="binary" />
+    <assets path="downloader/build/openfl/hl/obj/ApplicationMain.hl" rename="DivaDownloader.hl" type="binary" />
+    <assets path="7z" rename="./"/>
+    <assets path="LICENSE" type="text" />
 
     <haxelib name="openfl" />
     <haxelib name="actuate" />
@@ -26,7 +31,7 @@
     <!-- I DID NOT MAKE haxetoml!! yhslai DID: https://github.com/yhslai/haxetoml -->
     <!-- I forked it so I could use it like a haxelib! -->
     <haxelib name="haxetoml" />
-    <haxelib name="hxfilemanager" />
+    <haxelib name="hxFileManager" />
 
     <haxelib name="haxeui-core" />
     <haxelib name="haxeui-openfl" />

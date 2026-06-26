@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project>
+    <meta title="DivaDownloader" package="com.zsd.divadownloader" version="1.0.0" company="ZSolarDev" />
+    <app main="Main" file="DivaDownloader" path="build/openfl" />
+    <icon path="../resources/logo/Logo50.png" size="50" />
+    <icon path="../resources/logo/Logo100.png" size="100" />
+    <icon path="../resources/logo/Logo500.png" size="500" />
+    <icon path="../resources/logo/Logo1k.png" size="1000" />
+    <icon path="../resources/logo/Logo30.png" size="3000" />
+
+    <window background="#2c2f30" fps="120" />
+     <window width="400" height="550" if="desktop" />
+    <!-- classpath, haxe libs -->
+    <source path="src" />
+
+    <haxelib name="openfl" />
+    <haxelib name="actuate" />
+
+    <haxelib name="haxeui-core" />
+    <haxelib name="haxeui-openfl" />
+    <haxelib name="hxfilemanager" />
+</project>

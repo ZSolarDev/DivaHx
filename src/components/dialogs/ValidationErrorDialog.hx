@@ -1,4 +1,4 @@
-package components;
+package components.dialogs;
 
 import haxe.ui.containers.dialogs.Dialog;
 import hlwnative.HLNativeWindow;

@@ -1,0 +1,4 @@
+<item-renderer layout="horizontal" width="100%">
+    <checkbox id="enabled" />
+    <label id="label" width="100%" verticalAlign="center" />
+</item-renderer>

@@ -10,6 +10,7 @@ import backend.utils.Validate;
 import haxe.ui.components.Button;
 import backend.utils.Config;
 import hlwnative.HLNativeWindow;
+import components.dialogs.ValidationErrorDialog;
 
 using StringTools;
 

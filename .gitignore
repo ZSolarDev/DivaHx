@@ -1,2 +1,4 @@
 build/
 .vscode/
+downloader/build.bat
+downloader/build/
