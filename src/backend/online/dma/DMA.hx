@@ -32,11 +32,11 @@ class DMA {
     static function buildURL(query:String, sort:DMASortType, types:Array<DMAPostType>, offset:Int, limit:Int):String {
         var url = 'https://divamodarchive.com/api/v1/posts';
         // Search query
-        if (query != '')
+        if (query != '' && query != null)
             url += '?query=${query.urlEncode()}';
 
         // Sort
-        url += '${(query != '' ? '&' : '?')}sort=$sort';
+        url += '${((query != '' && query != null) ? '&' : '?')}sort=$sort';
 
         // The filter is meilisearch boolean logic syntax
         var typesStr = '';

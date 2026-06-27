@@ -1,5 +1,6 @@
 package backend.utils;
 
+import haxe.Int64;
 import openfl.geom.Matrix;
 import openfl.display.Shape;
 import openfl.display.BitmapData;
@@ -135,6 +136,20 @@ class Misc {
         roundedData.draw(shape);
 
         return roundedData;
+    }
+
+    public static function formatBytes64(bytes:Int64):String {
+        if (bytes < 1024)
+            return bytes + ' Bytes';
+
+        var bytesFloat:Float = Std.parseFloat(Int64.toStr(bytes));
+
+        if (bytesFloat < 1024.0 * 1024.0)
+            return (Math.ffloor((bytesFloat / 1024.0) * 100) / 100) + ' KB';
+        else if (bytesFloat < 1024.0 * 1024.0 * 1024.0)
+            return (Math.ffloor((bytesFloat / (1024.0 * 1024.0)) * 100) / 100) + ' MB';
+        else
+            return (Math.ffloor((bytesFloat / (1024.0 * 1024.0 * 1024.0)) * 100) / 100) + ' GB';
     }
 
     public static function formatBytes(bytes:Float):String {

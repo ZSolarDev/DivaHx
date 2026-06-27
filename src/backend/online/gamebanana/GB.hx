@@ -6,19 +6,58 @@ import haxe.Http;
 using StringTools;
 
 class GB {
+    public static function getModData(mod:GBMod):GBModDataResult {
+        var res:GBModDataResult = {
+            modData: null,
+            error: ''
+        }
+
+        var http = new Http('https://api.gamebanana.com/Core/Item/Data?itemtype=Mod&itemid=${mod._idRow}&fields=text,downloads,Files().aFiles(),likes,Nsfw().bIsNsfw(),description');
+        var jsonText = '';
+
+        http.onData = (response:String) -> {
+            jsonText = response;
+        }
+        
+        http.onError = (error:String) -> {
+            res.error = error;
+        }
+
+        http.request(false);
+
+        if (res.error != '')
+            return res;
+
+        try {
+            var parsedModData:GBModData = Json.parse(jsonText);
+            res.modData = parsedModData;
+        } catch (e) { // If the request failed, it's probably a GBModDataError..
+            try {
+                var error = Json.parse(jsonText);
+                if (error.error != null && error.errorCode != null)
+                    res.error = 'Failed to parse mod data(ModID: ${mod._idRow})!\nERROR: ${error.error}\nCODE: ${error.errorCode}';
+                else // uh oh
+                    res.error = 'Failed to parse mod data(ModID: ${mod._idRow})!\nERROR: ${e.message}\nSTACK:${e.stack.toString()}';
+            } catch (e2) {
+                res.error = 'Failed to parse mod data(ModID: ${mod._idRow})!\nERROR: ${e.message}\nSTACK:${e.stack.toString()}\n\n----------------------------------------------\n\nERROR PARSING ERROR: ${e2.message}\nSTACK:${e2.stack.toString()}';
+            }
+        }
+
+        return res;
+    }
     public static function getMods(query:String, category:GBCategory, sort:GBSortType, page:Int, modsPerPage:Int):GBModListResult {
         var res:GBModListResult = {
             mods: [],
             error: ''
         }
 
-        // All of this extra code because I can't filter by catagory when searching for a query btw.
+        // All of this extra code because I can't filter by category when searching for a query btw.
         var hasCategory = false;
-        var targetCategoryName = "";
+        var targetCategoryName = '';
 
         if (category != null) {
             var catStr:String = Std.string(category).trim();
-            if (catStr != "" && catStr != "None" && catStr != "null") {
+            if (catStr != '' && catStr != 'None' && catStr != 'null') {
                 hasCategory = true;
                 if (catStr.indexOf(':') != -1) {
                     targetCategoryName = catStr.split(':')[1];
@@ -40,7 +79,7 @@ class GB {
             var url = buildURL(query, category, sort, apiPageToFetch, modsPerPage);
 
             var http = new Http(url);
-            var jsonText:String = ""; 
+            var jsonText:String = ''; 
 
             http.onData = (response:String) -> {
                 jsonText = response;
@@ -60,16 +99,16 @@ class GB {
 
             try {
                 var response:Dynamic = Json.parse(jsonText);
-                var parsedMods:Array<Dynamic> = cast response._aRecords;
+                var parsedMods:Array<Dynamic> = (response._aRecords != null) ? cast response._aRecords : [];
             
                 var index = 0;
                 while (index < parsedMods.length) {
                     var mod:Dynamic = parsedMods[index];
                     index++; 
                 
-                    var modName:String = (mod._sName != null) ? (cast mod._sName).toLowerCase() : "";
+                    var modName:String = (mod._sName != null) ? (cast mod._sName).toLowerCase() : '';
                     var categoryMatches = !hasCategory || (mod._aRootCategory != null && mod._aRootCategory._sName == targetCategoryName);
-                    var nameMatches = (query == "") || modName.toLowerCase().contains(query.toLowerCase());
+                    var nameMatches = (query == '') || modName.toLowerCase().contains(query.toLowerCase());
                 
                     if (categoryMatches && nameMatches) {
                         if (!reachedTargetUiPageStart) {
@@ -84,7 +123,6 @@ class GB {
                     if (finalMods.length == modsPerPage)
                         break;
                 }
-            
             } catch (e) { // If the request failed, the result is probably a GBError. Let's try to parse it as such
                 var error:GBError = Json.parse(jsonText);
                 if (error._sErrorCode != null && error._sErrorData != null)
@@ -105,16 +143,16 @@ class GB {
     }
 
     static function buildURL(query:String, category:GBCategory, sort:GBSortType, page:Int, modsPerPage:Int):String {
-        var url = 'https://gamebanana.com/apiv12/' + ((query != '') ? 'Util/Search/Results' : 'Mod/Index');
+        var url = 'https://gamebanana.com/apiv12/' + ((query != '' && query != null) ? 'Util/Search/Results' : 'Mod/Index');
 
         // Search query
-        if (query != '') {
+        if (query != '' && query != null) {
             url += '?_sSearchString=${query.urlEncode()}';
             url += '&_sModelName=Mod';
         }
 
         // Page
-        url += '${(query != '' ? '&' : '?')}_nPage=$page';
+        url += '${((query != '' && query != null) ? '&' : '?')}_nPage=$page';
 
         // Mods per page
         url += '&_nPerPage=$modsPerPage';
@@ -123,7 +161,7 @@ class GB {
         url += '&_sSort=$sort';
 
         // Category
-        if (query != '')
+        if (query != '' && query != null)
             url += ((category != None) ? '&_idCategoryRow=${(category:String).split(':')[0]}' : '&_idGameRow=16522');
         else
             url += ((category != None) ? '&_aFilters[Generic_Category]=${(category:String).split(':')[0]}' : '&_aFilters[Generic_Game]=16522');

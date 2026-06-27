@@ -6,6 +6,7 @@ import hl.UI;
 import sys.FileSystem;
 import dma.DMAMod;
 import gamebanana.GBMod;
+import gamebanana.GBModData;
 import sys.io.File;
 import haxe.Json;
 import haxe.ui.themes.Theme;
@@ -16,12 +17,15 @@ import haxe.Exception;
 using StringTools;
 
 class Main {
-    static public var isDma:Bool = true;
-    static public var dmaMod:DMAMod;
-    static public var gbMod:GBMod;
-    static public var mmModPath:String = '';
+    public static var isDma:Bool = true;
+    public static var dmaMod:DMAMod;
+    public static var gbMod:GBMod;
+    public static var gbModData:GBModData;
+    public static var mmModPath:String = '';
 
     public static function main() {
+        UI.closeConsole();
+        
         try {
             FileManager.init();
             if (FileSystem.exists('DMAMDATA')) {
@@ -30,7 +34,9 @@ class Main {
             } else {
                 if (FileSystem.exists('GBMDATA')) {
                     isDma = false;
-                    gbMod = Json.parse(File.getContent('GBMDATA'));
+                    var data = Json.parse(File.getContent('GBMDATA'));
+                    gbMod = data.mod;
+                    gbModData = data.modData;
                     FileSystem.deleteFile('GBMDATA');
                 } else
                     throw new Exception('Mod data was not found!');
@@ -53,8 +59,7 @@ class Main {
         } catch (e) {
             throwError(e);
         }
-        
-        //UI.closeConsole();
+
         Toolkit.theme = Theme.DARK;
         var app = new HaxeUIApp();
         app.ready(function() {

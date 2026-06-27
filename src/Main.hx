@@ -1,25 +1,14 @@
 package;
 
+import backend.online.download.DownloadReportManager;
 import backend.utils.SingleInstance;
-import sys.net.Address;
 import boot.BootError;
-import sys.io.FileOutput;
-import sys.FileSystem;
-import lime.app.Application;
-import sys.io.File;
-import openfl.Lib;
 import backend.utils.Validate;
 import hlwnative.HLNativeWindow;
 import haxe.ui.themes.Theme;
 import haxe.ui.Toolkit;
 import backend.utils.Config;
 import haxe.ui.HaxeUIApp;
-import sys.net.Socket;
-import sys.net.Host;
-import sys.FileSystem;
-import sys.io.File;
-import sys.io.FileOutput;
-import lime.app.Application;
 import hxFileManager.FileManager;
 
 class Main {
@@ -48,9 +37,10 @@ class Main {
         Validate.invalidateMMPath();
         Validate.checkInstallation(Config.data.mmPath);
         Toolkit.theme = Theme.DARK;
-        
+
         app = new HaxeUIApp();
         app.ready(function() {
+            DownloadReportManager.init();
             app.addComponent(new MainView());
 
             app.start();

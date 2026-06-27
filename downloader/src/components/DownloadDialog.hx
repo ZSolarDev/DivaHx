@@ -1,5 +1,7 @@
 package components;
 
+import haxe.Json;
+import haxe.Int64;
 import sys.io.File;
 import haxe.ui.components.Button;
 import haxe.ui.containers.HBox;
@@ -23,7 +25,8 @@ import sys.thread.Thread;
 import haxe.ui.components.Label;
 import haxe.ui.containers.dialogs.Dialog;
 import openfl.Lib;
-import haxe.ui.events.MouseEvent;
+import gamebanana.GBMod;
+import gamebanana.GBModData;
 
 using StringTools;
 
@@ -32,12 +35,14 @@ class DownloadDialog extends Dialog {
     public var progress:HorizontalProgress;
     public var infoText:Label;
     public var modImage:Image;
+    public var fileIdx:Int = 0;
 
-    var pendingCur:Float = 0;
-    var pendingTotal:Float = 0;
+    var gbFileKeys:Array<String> = [];
+    var pendingCur:Int64 = 0;
+    var pendingTotal:Int64 = 0;
     var hasPendingUpdate:Bool = false;
 
-    public function new(?fileIdx:Int = 0) {
+    public function new() {
         super();
         try {
             this.draggable = false;
@@ -54,30 +59,54 @@ class DownloadDialog extends Dialog {
 
             if (isDma) {
                 if (dmaMod.files.length == 1) {
-                    beginDownload(0);
+                    beginDownload();
                 } else {
-                    BitmapData.loadFromFile(dmaMod.images[0]).onComplete((bitmapData:BitmapData) -> {
-                        var newData:BitmapData = roundCorners(bitmapData, 35);
-                        modImage = new Image();
-                        modImage.resource = newData;
-                        modImage.scaleMode = 'fitinside';
-                        modImage.width = width - 20;
-                        modImage.horizontalAlign = 'center';
-                        dialogContent.addComponent(modImage);
-                        showFileChooser();
-                    }).onError((error) -> {
-                        trace(error);
-                        showFileChooser();
-                    });
+                    loadModPreviewAndShowChooser();
                 }
+            } else {
+                if (gbModData != null && gbModData.filesAFiles != null)
+                    gbFileKeys = Reflect.fields(gbModData.filesAFiles);
+
+                if (gbFileKeys.length == 1)
+                    beginDownload();
+                else
+                    loadModPreviewAndShowChooser();
             }
         } catch (e) {
             throwError(e);
         }
     }
 
+    inline function getModImageUrl():String {
+        if (isDma) {
+            return dmaMod.images[0];
+        } else {
+            var preview = gbMod._aPreviewMedia._aImages[0];
+            return preview._sBaseUrl + '/' + preview._sFile;
+        }
+    }
+
+    inline function getModName():String {
+        return isDma ? dmaMod.name : gbMod._sName;
+    }
+
+    function loadModPreviewAndShowChooser() {
+        BitmapData.loadFromFile(getModImageUrl()).onComplete((bitmapData:BitmapData) -> {
+            var newData:BitmapData = roundCorners(bitmapData, 35);
+            modImage = new Image();
+            modImage.resource = newData;
+            modImage.scaleMode = 'fitinside';
+            modImage.width = width - 20;
+            modImage.horizontalAlign = 'center';
+            dialogContent.addComponent(modImage);
+            showFileChooser();
+        }).onError((error) -> {
+            showFileChooser();
+        });
+    }
+
     function showFileChooser() {
-        this.title = 'Choose a file to download: ${dmaMod.name}';
+        this.title = 'Choose a file to download: ${getModName()}';
 
         var label = new Label();
         label.horizontalAlign = 'center';
@@ -87,7 +116,11 @@ class DownloadDialog extends Dialog {
 
         var scrollView:ScrollView = new ScrollView();
         scrollView.width = width - 20;
-        scrollView.height = dialogContent.height - modImage.height - label.height - 30;
+        if (modImage != null) {
+            scrollView.height = dialogContent.height - modImage.height - label.height - 30;
+        } else {
+            scrollView.height = dialogContent.height - label.height - 30;
+        }
         scrollView.horizontalAlign = 'center';
         scrollView.verticalAlign = 'bottom';
         scrollView.horizontalScrollPolicy = 'never';
@@ -99,13 +132,22 @@ class DownloadDialog extends Dialog {
         filesContainer.styleString = 'vertical-spacing: 15px;';
         scrollView.addComponent(filesContainer);
 
-        for (i in 0...dmaMod.files.length) {
+        var fileCount = isDma ? dmaMod.files.length : gbFileKeys.length;
+
+        for (i in 0...fileCount) {
             var idx = i;
             var fileBox:HBox = new HBox();
             fileBox.width = width - 30;
 
             var fileLabel = new Label();
-            fileLabel.text = dmaMod.file_names[idx];
+            
+            if (isDma)
+                fileLabel.text = dmaMod.file_names[idx];
+            else {
+                var fileInfo:Dynamic = Reflect.field(gbModData.filesAFiles, gbFileKeys[idx]);
+                fileLabel.text = fileInfo._sFile;
+            }
+
             fileLabel.horizontalAlign = 'center';
             fileLabel.verticalAlign = 'center';
             fileLabel.percentWidth = 70;
@@ -115,7 +157,8 @@ class DownloadDialog extends Dialog {
             downloadButton.text = 'Download';
             downloadButton.percentWidth = 30;
             downloadButton.onClick = (_) -> {
-                beginDownload(idx);
+                fileIdx = idx;
+                beginDownload();
             }
             fileBox.addComponent(downloadButton);
 
@@ -123,7 +166,7 @@ class DownloadDialog extends Dialog {
         }
     }
 
-    function beginDownload(fileIdx:Int) {
+    function beginDownload() {
         dialogContent.removeAllComponents();
 
         spinner = new Spinner();
@@ -133,7 +176,7 @@ class DownloadDialog extends Dialog {
         spinner.horizontalAlign = 'center';
         dialogContent.addComponent(spinner);
 
-        BitmapData.loadFromFile(dmaMod.images[0]).onComplete((bitmapData:BitmapData) -> {
+        BitmapData.loadFromFile(getModImageUrl()).onComplete((bitmapData:BitmapData) -> {
             var newData:BitmapData = roundCorners(bitmapData, 35);
             modImage = new Image();
             modImage.resource = newData;
@@ -147,7 +190,18 @@ class DownloadDialog extends Dialog {
             loadDialogBody();
         });
 
-        var fileName = dmaMod.file_names[fileIdx];
+        var fileName = '';
+        var downloadUrl = '';
+
+        if (isDma) {
+            fileName = dmaMod.file_names[fileIdx];
+            downloadUrl = 'https://divamodarchive.com/api/v1/posts/${dmaMod.id}/download/$fileIdx';
+        } else {
+            var fileInfo:Dynamic = Reflect.field(gbModData.filesAFiles, gbFileKeys[fileIdx]);
+            fileName = fileInfo._sFile;
+            downloadUrl = fileInfo._sDownloadUrl;
+        }
+
         fileName = fileName.split('/').pop();
         fileName = fileName.split('\\').pop();
         fileName = fileName.replace(':', ';');
@@ -158,12 +212,12 @@ class DownloadDialog extends Dialog {
         fileName = fileName.replace('>', ')');
         fileName = fileName.replace('|', ';');
 
-        this.title = 'Downloading ${dmaMod.name} ($fileName)...';
+        this.title = 'Downloading ${getModName()} ($fileName)...';
         var dir = createTempDir();
 
         Thread.create(() -> {
             try {
-                HttpManager.downloadTo('https://divamodarchive.com/api/v1/posts/${dmaMod.id}/download/$fileIdx', Path.join([dir, fileName]), new Map(),
+                HttpManager.downloadTo(downloadUrl, Path.join([dir, fileName]), new Map(),
                     (cur, total) -> {
                         try {
                             pendingCur = cur;
@@ -191,7 +245,7 @@ class DownloadDialog extends Dialog {
         var modName:Label = new Label();
         modName.horizontalAlign = 'center';
         modName.styleString = 'font-size:20px; color:#FFFFFF;';
-        modName.text = truncateToFitWidth(dmaMod.name, width, 20);
+        modName.text = truncateToFitWidth(getModName(), width, 20);
         dialogContent.addComponent(modName);
         
         progress = new HorizontalProgress();
@@ -208,73 +262,37 @@ class DownloadDialog extends Dialog {
     }
 
     function onSuccess(archivePath:String, archiveFolder:String = null) {
+        var cleanModName = getModName().replace(':', ';').replace('*', '').replace('?', '').replace('"', "'").replace('<', '(').replace('>', ')').replace('|', ';');
+        var logPath = 'MREPORT(${cleanModName})';
+        
         try {
             Lib.application.window.stage.removeEventListener(Event.ENTER_FRAME, onEnterFrame);
             infoText.text = 'Extracting...';
             
-            var destDir = Path.join([mmModPath, dmaMod.name]);
+            var destDir = Path.join([mmModPath, cleanModName]);
             @:privateAccess FileManager.removePath(destDir);
 
-            var logPath = '7zLog(${dmaMod.name}).log';
+            File.saveContent(logPath, '${Json.stringify({
+                mod: ((isDma ? dmaMod : gbMod):Dynamic),
+                modData: ((isDma ? null : gbModData):Dynamic),
+                modType: (isDma ? 'dma' : 'gb'),
+                fileIdx: fileIdx,
+                archiveFolder: archiveFolder
+            }).replace('\n', '')}\n');
 
-            Sys.command('start "" cmd /c ""7z.exe" x "$archivePath" -o"$mmModPath" -y> "$logPath" 2>&1"');
-
-            var elapsedMs = 0;
-            var pollIntervalMs = 100;
-            var timeoutMs = 120000;
-            var poller:haxe.Timer = null;
-
-            poller = new haxe.Timer(pollIntervalMs);
-            poller.run = () -> {
-                elapsedMs += pollIntervalMs;
-
-                var done = false;
-                if (FileSystem.exists(logPath)) {
-                    try {
-                        var logContent = File.getContent(logPath);
-                        if (logContent.indexOf('Everything is Ok') != -1)
-                            done = true;
-                    } catch (e) {} // file might be mid-write/locked by 7z, just try again next tick
-                }
-
-                if (done) {
-                    poller.stop();
-                    try {
-                        FileSystem.deleteFile(logPath);
-                        FileSystem.deleteFile(archivePath);
-                        if (archiveFolder != null) FileSystem.deleteDirectory(archiveFolder);
-                    } catch (e) {}
-                    hideDialog('{{ok}}');
-                    success();
-                } else if (elapsedMs >= timeoutMs) {
-                    poller.stop();
-                    hideDialog('{{ok}}');
-                    throwError(new Exception(
-                        'Mod extraction failed or timed out! You can find the downloaded file at: "$archivePath"' +
-                        (FileSystem.exists(logPath) ? ' You can find the extraction log at: $logPath' : '')
-                    ));
-                }
-            }
+            Sys.command('start "" cmd /c ""7z.exe" x "$archivePath" -o"$mmModPath" -y>> "$logPath" 2>&1"');
+            Sys.exit(0);
         } catch (e) {
-            try {
-                FileSystem.deleteFile(archivePath);
-                if (archiveFolder != null) FileSystem.deleteDirectory(archiveFolder);
-            } catch (e) {
-                throwError(new Exception(
-                'Mod extraction and cleanup failed! ' + e.message +
-                (FileSystem.exists('7zLog(${dmaMod.name}).log') ? ' You can find the extraction log at: 7zLog(${dmaMod.name}).log' : '')
-            ));
-            }
             throwError(new Exception(
                 'Mod extraction failed! ' + e.message +
-                (FileSystem.exists('7zLog(${dmaMod.name}).log') ? ' You can find the extraction log at: 7zLog(${dmaMod.name}).log' : '')
+                (FileSystem.exists(logPath) ? ' You can find the extraction log at: $logPath' : '')
             ));
         }
     }
 
     function createTempDir(prefix:String = 'dhx_download_'):String {
-        var baseTemp = Sys.getEnv("TEMP");
-        if (baseTemp == null) baseTemp = Sys.getEnv("TMP");
+        var baseTemp = Sys.getEnv('TEMP');
+        if (baseTemp == null) baseTemp = Sys.getEnv('TMP');
         if (baseTemp == null) baseTemp = './';
 
         var randomSuffix = StringTools.hex(Std.random(99999), 8);
@@ -293,15 +311,18 @@ class DownloadDialog extends Dialog {
         return tempDir;
     }
 
-    public static function formatBytes(bytes:Float):String {
+    public static function formatBytes(bytes:Int64):String {
         if (bytes < 1024)
-            return Std.int(bytes) + ' Bytes';
-        else if (bytes < 1024 * 1024)
-            return Std.string(Math.round(bytes / 1024 * 100) / 100) + ' KB';
-        else if (bytes < 1024 * 1024 * 1024)
-            return Std.string(Math.round(bytes / (1024 * 1024) * 100) / 100) + ' MB';
+            return bytes + ' Bytes';
+
+        var bytesFloat:Float = Std.parseFloat(Int64.toStr(bytes));
+
+        if (bytesFloat < 1024.0 * 1024.0)
+            return (Math.ffloor((bytesFloat / 1024.0) * 100) / 100) + ' KB';
+        else if (bytesFloat < 1024.0 * 1024.0 * 1024.0)
+            return (Math.ffloor((bytesFloat / (1024.0 * 1024.0)) * 100) / 100) + ' MB';
         else
-            return Std.string(Math.round(bytes / (1024 * 1024 * 1024) * 100) / 100) + ' GB';
+            return (Math.ffloor((bytesFloat / (1024.0 * 1024.0 * 1024.0)) * 100) / 100) + ' GB';
     }
 
     public function roundCorners(source:BitmapData, cornerRadius:Float):BitmapData {
@@ -319,7 +340,7 @@ class DownloadDialog extends Dialog {
     }
 
     public function truncateToFitWidth(text:String, maxWidth:Float, fontSize:Int):String {
-        if (text == null || text == "") return "";
+        if (text == null || text == '') return '';
 
         var measurer = new TextField();
         var format = new TextFormat(null, cast fontSize * 1.2);
@@ -332,7 +353,7 @@ class DownloadDialog extends Dialog {
         var truncated = text;
         while (measurer.textWidth > maxWidth && truncated.length > 0) {
             truncated = truncated.substr(0, truncated.length - 1);
-            measurer.text = truncated + "...";
+            measurer.text = truncated + '...';
         }
 
         return measurer.text;
@@ -342,10 +363,13 @@ class DownloadDialog extends Dialog {
         if (hasPendingUpdate) {
             hasPendingUpdate = false;
             if (progress != null && pendingTotal > 0) {
-                var pct = (pendingCur / pendingTotal) * 100;
-                if (pct >= 0 && pct <= 100 && !Math.isNaN(pct))
+                var pctInt64:Int64 = (pendingCur * 100) / pendingTotal;
+                var pct:Float = Std.parseFloat(Int64.toStr(pctInt64));
+                if (pct >= 0 && pct <= 100) {
                     progress.pos = pct;
+                }
             }
+
             if (infoText != null)
                 infoText.text = '${formatBytes(pendingCur)} / ${formatBytes(pendingTotal)}';
         }

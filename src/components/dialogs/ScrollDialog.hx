@@ -75,7 +75,7 @@ class ScrollDialog extends Dialog {
         width = Screen.instance.width * 0.7;
         height = Screen.instance.height * 0.7;
         descScrollView.width = width - 12;
-        descScrollView.height = height - top - dialogFooter.height;
+        descScrollView.height = height - top - 5;
         mainBox.width = width - 12;
         descBox.width = mainBox.width - 55;
         centerDialogComponent(this, true);
@@ -90,7 +90,7 @@ class ScrollDialog extends Dialog {
         
         descScrollView = new ScrollView();
         descScrollView.width = width - 12;
-        descScrollView.height = height - top - dialogFooter.height;
+        descScrollView.height = height - top - 5;
         descScrollView.horizontalScrollPolicy = 'never';
         mainBox.addComponent(descScrollView);
         

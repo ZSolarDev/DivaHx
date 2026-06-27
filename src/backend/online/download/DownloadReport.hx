@@ -1,9 +1,12 @@
 package backend.online.download;
 
+import backend.online.gamebanana.GBModData;
+
 typedef DownloadReport = {
-    var title:String;
-    var data:String;
-    var type:String;
-    var modType:String;
-    var mod:Dynamic;
+    var ?mod:Dynamic;
+    var ?modType:String;
+    var ?modData:GBModData;
+    var ?fileIdx:Int;
+    var ?archiveFolder:String;
+    var ?extractionLog:String;
 }

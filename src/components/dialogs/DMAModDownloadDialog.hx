@@ -14,6 +14,7 @@ class DMAModDownloadDialog extends ScrollDialog {
             retryButton.text = 'Retry';
             retryButton.onClick = (_) -> {
                 DMADownloader.downloadMod(mod);
+                hideDialog('{{close}}');
             }
             addFooterComponent(retryButton);
         }

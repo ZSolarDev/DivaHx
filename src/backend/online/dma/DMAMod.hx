@@ -1,5 +1,7 @@
 package backend.online.dma;
 
+import haxe.Int64;
+
 /* 
     I didn't include the "private" field because:
     1. It conflicts with the keyword
@@ -19,7 +21,7 @@ typedef DMAMod = {
     var dependencies:Array<DMAMod>;
     var dependency_descriptions:Array<Dynamic>;
     var file_names:Array<String>;
-    var file_sizes:Array<Int>;
+    var file_sizes:Array<Int64>;
     var explicit:Bool;
     var explicit_reason:String;
 }

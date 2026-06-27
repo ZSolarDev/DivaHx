@@ -1,5 +1,8 @@
 package hxFileManager;
 
+import sys.FileSystem;
+import haxe.Int64Helper;
+import haxe.Int64;
 import haxe.Exception;
 import haxe.io.BytesOutput;
 import haxe.std.sys.DHttp;
@@ -12,36 +15,36 @@ class HttpManager {
 
 	public static var hasInternet:Bool = checkInternet();
 	public static var defaultUserAgent:String = "hxFileManager";
-	public static var defaultTimeout:Int = 10;
+	public static var defaultTimeout:Int64 = 10;
     public static var output:ProgressOutput;
 
 	/** Request text from a URL. @param url Target URL. @param headers Optional headers. @param maxRedirects Max redirects to follow (default 5). @param onProgress Optional progress callback (downloaded, total). */
-	public static function requestText(url:String, ?headers:Map<String, String>, maxRedirects:Int = 5, ?onProgress:(Int, Int)->Void):String
+	public static function requestText(url:String, ?headers:Map<String, String>, maxRedirects:Int64 = 5, ?onProgress:(Int64, Int64)->Void):String
 		return requestBytes(url, headers, maxRedirects, onProgress).toString();
 
 	/** Request raw bytes from a URL. @param url Target URL. @param headers Optional headers. @param maxRedirects Max redirects to follow (default 5). @param onProgress Optional progress callback (downloaded, total). */
-	public static function requestBytes(url:String, ?headers:Map<String, String>, maxRedirects:Int = 5, ?onProgress:(Int, Int)->Void, ?savePath:String = '', ?chunkSize:Int = -1):Bytes {
+	public static function requestBytes(url:String, ?headers:Map<String, String>, maxRedirects:Int64 = 5, ?onProgress:(Int64, Int64)->Void, ?savePath:String = '', ?chunkSize:Int64 = -1):Bytes {
         if (maxRedirects < 0) throw new HttpError(new Exception("Too many redirects"), url);
 
         var error:HttpError = null;
-        var statusCode:Int = -1;
+        var statusCode:Int64 = -1;
 
-        var contentLength = -1;
+        var contentLength:Int64 = -1;
         if (onProgress != null || chunkSize > 0) {
             var headH = buildRequest(url, headers);
-            headH.onStatus = (code:Int) -> statusCode = code;
+            headH.onStatus = (code:Int64) -> statusCode = code;
             headH.onError = (_) -> {};
             try headH.customRequest(false, new BytesOutput(), null, "HEAD")
             catch (_:Dynamic) {}
             var lenStr = headH.responseHeaders?.get("Content-Length") ?? headH.responseHeaders?.get("content-length");
-            if (lenStr != null) contentLength = Std.parseInt(lenStr);
+            if (lenStr != null) contentLength = Int64Helper.parseString(lenStr);
         }
 
         // chunked mode
         if (chunkSize != null && chunkSize > 0 && savePath != null && savePath != '' && contentLength > 0) {
-            var startByte = 0;
-            if (sys.FileSystem.exists(savePath))
-                startByte = sys.FileSystem.stat(savePath).size;
+            var startByte:Int64 = 0;
+            if (FileSystem.exists(savePath))
+                startByte = FileSystem.stat(savePath).size;
 
             if (startByte >= contentLength)
                 return null; // already fully downloaded
@@ -57,9 +60,9 @@ class HttpManager {
 
                 var h = buildRequest(url, rangeHeaders);
                 h.onError = (err:Exception) -> error = new HttpError(err, url);
-                h.onStatus = (code:Int) -> statusCode = code;
+                h.onStatus = (code:Int64) -> statusCode = code;
 
-                var chunkStart = current; // capture for the closure below
+                var chunkStart = current;
                 var chunkOutput = new ProgressOutput(rangeEnd - chunkStart + 1, (chunkCur, chunkTotal) -> {
                     if (onProgress != null) onProgress(chunkStart + chunkCur, contentLength);
                 });
@@ -85,7 +88,7 @@ class HttpManager {
         // non-chunked path
         var h = buildRequest(url, headers);
         h.onError = (err:Exception) -> error = new HttpError(err, url);
-        h.onStatus = (code:Int) -> statusCode = code;
+        h.onStatus = (code:Int64) -> statusCode = code;
 
         output = new ProgressOutput(contentLength, onProgress, savePath);
 
@@ -192,7 +195,7 @@ class HttpManager {
 	}
 
 	/** Download a URL to a local file path. @param url Remote URL. @param savePath Local destination path. @param headers Optional headers. @param onProgress Optional progress callback (downloaded, total). @param onDone Optional completion callback. @param onError Optional error callback. */
-	public static function downloadTo(url:String, savePath:String, ?headers:Map<String, String>, ?onProgress:(Int, Int)->Void, ?onDone:Void->Void, ?onError:Exception->Void, ?chunkSize:Int = -1):Void {
+	public static function downloadTo(url:String, savePath:String, ?headers:Map<String, String>, ?onProgress:(Int64, Int64)->Void, ?onDone:Void->Void, ?onError:Exception->Void, ?chunkSize:Int64 = -1):Void {
         try {
             requestBytes(url, headers, 5, onProgress, savePath, chunkSize);
             if (onDone != null) onDone();
@@ -208,10 +211,10 @@ class HttpManager {
 	}
 
 	/** Return the HTTP status code for a URL without downloading the body. @param url Target URL. @param headers Optional headers. */
-	public static function getStatusCode(url:String, ?headers:Map<String, String>):Int {
-		var code = -1;
+	public static function getStatusCode(url:String, ?headers:Map<String, String>):Int64 {
+		var code:Int64 = -1;
 		var h = buildRequest(url, headers);
-		h.onStatus = (c:Int) -> code = c;
+		h.onStatus = (c:Int64) -> code = c;
 		h.onBytes = (_) -> {};
 		h.onError = (_) -> {};
 		try h.request(false) catch (_) {}
@@ -228,13 +231,13 @@ class HttpManager {
 	}
 
 	/** Retry a request up to maxAttempts times with an optional delay between attempts. @param url Target URL. @param maxAttempts Max number of attempts (default 3). @param delayMs Milliseconds to wait between attempts (default 500). @param headers Optional headers. */
-	public static function requestWithRetry(url:String, maxAttempts:Int = 3, delayMs:Int = 500, ?headers:Map<String, String>):Bytes {
+	public static function requestWithRetry(url:String, maxAttempts:Int64 = 3, delayMs:Int64 = 500, ?headers:Map<String, String>):Bytes {
 		var lastErr:Dynamic = null;
-		for (i in 0...maxAttempts) {
+		for (i in 0...maxAttempts.low) {
 			try return requestBytes(url, headers)
 			catch (e:Dynamic) {
 				lastErr = e;
-				if (i < maxAttempts - 1) Sys.sleep(delayMs / 1000.0);
+				if (i < maxAttempts - 1) Sys.sleep(delayMs.low / 1000.0);
 			}
 		}
 		throw lastErr;
@@ -262,7 +265,7 @@ class HttpManager {
 		return h;
 	}
 
-	static function isRedirect(status:Int):Bool {
+	static function isRedirect(status:Int64):Bool {
         return status == 301 || status == 302 || status == 303 || status == 307 || status == 308;
     }
 }
@@ -270,10 +273,10 @@ class HttpManager {
 class HttpError {
 	public var error:Exception;
 	public var url:String;
-	public var status:Int;
+	public var status:Int64;
 	public var redirected:Bool;
 
-	public function new(error:Exception, url:String, status:Int = -1, redirected:Bool = false) {
+	public function new(error:Exception, url:String, status:Int64 = -1, redirected:Bool = false) {
 		this.error = error;
 		this.url = url;
 		this.status = status;

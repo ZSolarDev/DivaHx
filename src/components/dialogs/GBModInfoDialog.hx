@@ -1,6 +1,8 @@
 package components.dialogs;
 
-import backend.online.download.DMADownloader;
+import backend.online.gamebanana.GBModData;
+import backend.online.gamebanana.GBMod;
+import backend.online.download.GBDownloader;
 import sys.FileSystem;
 import openfl.Lib;
 import openfl.net.URLRequest;
@@ -22,25 +24,27 @@ import haxe.ui.containers.dialogs.Dialog;
 
 using StringTools;
 
-class DMAModInfoDialog extends Dialog {
-    public var mod:DMAMod;
+class GBModInfoDialog extends Dialog {
+    public var mod:GBMod;
+    public var modData:GBModData;
     public var modInfo:VBox;
     public var curImageIdx:Int = 0;
     public var descScrollView:ScrollView;
     public var mainVBox:VBox;
     public var titleBox:Box;
     public var descBox:Box;
-    public var depsBox:VBox;
     public var imageBox:VBox;
     public var imageDisplayBox:HBox;
     public var curImage:Image;
     public var spinner:Spinner;
     public var curImageText:Label;
+    public var descText:Label;
 
-    override public function new(mod:DMAMod) {
+    override public function new(mod:GBMod, modData:GBModData) {
         super();
         this.mod = mod;
-        title = mod.name;
+        this.modData = modData;
+        title = mod._sName;
         width = Screen.instance.width * 0.7;
         height = Screen.instance.height * 0.7;
         dialogContent.padding = 0;
@@ -56,21 +60,32 @@ class DMAModInfoDialog extends Dialog {
 
         buttons = '{{close}}';
         var downloadButton = new Button();
-        downloadButton.text = 'Download (${(mod.files.length == 1 ? (Misc.formatBytes64(mod.file_sizes[0])) : mod.files.length + ' Files')}) ' + (MainView.isModInstalled(mod.name) ? '(Installed' + (!MainView.isModEnabled(mod.name) ? ', Disabled' : '') + ')' : '');
+        var fileKeys = Reflect.fields(modData.filesAFiles);
+        var filesLength = fileKeys.length;
+        var displaySize = "";
+
+        if (filesLength == 1) {
+            var firstFile = Reflect.field(modData.filesAFiles, fileKeys[0]);
+            displaySize = Misc.formatBytes64(firstFile._nFilesize);
+        } else {
+            displaySize = filesLength + ' Files';
+        }
+
+        downloadButton.text = 'Download (' + displaySize + ') ' + (MainView.isModInstalled(mod._sName) ? '(Installed' + (!MainView.isModEnabled(mod._sName) ? ', Disabled' : '') + ')' : '');
         downloadButton.onClick = (_) -> {
-            DMADownloader.downloadMod(mod);
+            GBDownloader.downloadMod(mod, modData);
         }
         addFooterComponent(downloadButton);
         var modInfoButton = new Button();
         modInfoButton.text = 'Mod Info';
         modInfoButton.onClick = (_) -> {
-            Lib.getURL(new URLRequest('https://divamodarchive.com/post/${mod.id}'));
+            Lib.getURL(new URLRequest('https://divamodarchive.com/post/${mod._idRow}'));
         }
         addFooterComponent(modInfoButton);
     }
 
     public function loadImage() {
-        if (mod.images.length == 0) {
+        if (mod._aPreviewMedia._aImages.length == 0) {
             imageDisplayBox.removeAllComponents();
             var noImages = new Label();
             noImages.text = "No images available.";
@@ -80,7 +95,7 @@ class DMAModInfoDialog extends Dialog {
             return;
         }
 
-        BitmapData.loadFromFile(mod.images[curImageIdx]).onComplete((bitmapData:BitmapData) -> {
+        BitmapData.loadFromFile('${mod._aPreviewMedia._aImages[curImageIdx]._sBaseUrl}/${mod._aPreviewMedia._aImages[curImageIdx]._sFile}').onComplete((bitmapData:BitmapData) -> {
             var newData:BitmapData = Misc.roundCorners(bitmapData, 35);
 
             curImage = new Image();
@@ -98,10 +113,10 @@ class DMAModInfoDialog extends Dialog {
             prevImageButton.verticalAlign = 'center';
             prevImageButton.fontSize = 32;
             prevImageButton.onClick = (_) -> {
-                curImageIdx = (curImageIdx - 1 + mod.images.length) % mod.images.length;
+                curImageIdx = (curImageIdx - 1 + mod._aPreviewMedia._aImages.length) % mod._aPreviewMedia._aImages.length;
                 loadImage();
             }
-            if (mod.images.length == 1)
+            if (mod._aPreviewMedia._aImages.length == 1)
                 prevImageButton.disabled = true;
             imageDisplayBox.addComponent(prevImageButton);
 
@@ -112,14 +127,14 @@ class DMAModInfoDialog extends Dialog {
             nextImageButton.verticalAlign = 'center';
             nextImageButton.fontSize = 32;
             nextImageButton.onClick = (_) -> {
-                curImageIdx = (curImageIdx + 1) % mod.images.length;
+                curImageIdx = (curImageIdx + 1) % mod._aPreviewMedia._aImages.length;
                 loadImage();
             }
-            if (mod.images.length == 1)
+            if (mod._aPreviewMedia._aImages.length == 1)
                 nextImageButton.disabled = true;
             imageDisplayBox.addComponent(nextImageButton);
 
-            curImageText.text = 'Image ${curImageIdx + 1}/${mod.images.length}';
+            curImageText.text = 'Image ${curImageIdx + 1}/${mod._aPreviewMedia._aImages.length}';
 
         }).onError((_) -> {
             // TODO: handle error
@@ -153,8 +168,16 @@ class DMAModInfoDialog extends Dialog {
         curImageText = new Label();
         curImageText.horizontalAlign = 'center';
         curImageText.text = 'Loading...';
-        curImageText.styleString = 'font-size:17px; color:#FFFFFF;';
+        curImageText.styleString = 'font-size:17px; color:#FFFFFF; padding-bottom:5px;';
         imageBox.addComponent(curImageText);
+
+        if (modData.description != '') {
+            descText = new Label();
+            descText.horizontalAlign = 'center';
+            descText.htmlText = '<i>${modData.description}</i>';
+            descText.styleString = 'font-size:15px; color:#E0E0E0;';
+            imageBox.addComponent(descText);
+        }
 
         loadImage();
     }
@@ -167,8 +190,6 @@ class DMAModInfoDialog extends Dialog {
         mainVBox.width = width - 12;
         titleBox.width = mainVBox.width - 55;
         descBox.width = mainVBox.width - 55;
-        if (depsBox != null)
-            depsBox.width = mainVBox.width - 55;
         imageBox.width = mainVBox.width - 55;
         imageDisplayBox.height = Screen.instance.height * 0.35;
         if (curImage != null) {
@@ -204,7 +225,7 @@ class DMAModInfoDialog extends Dialog {
         mainVBox.addComponent(titleBox);
         var title = new Label();
         title.styleString = 'font-size:32; color:#FFFFFF;';
-        title.text = mod.name.trim();
+        title.text = mod._sName.trim();
         title.textAlign = 'center';
         title.horizontalAlign = 'center';
         title.verticalAlign = 'center';
@@ -225,51 +246,12 @@ class DMAModInfoDialog extends Dialog {
         descBox.addComponent(desc);
 
         haxe.Timer.delay(() -> {
-            desc.htmlText = Misc.markdownToHTMLText(mod.text);
+            desc.htmlText = modData.text;
             desc.getTextDisplay().textField.selectable = true;
             desc.getTextDisplay().textField.mouseEnabled = true;
             desc.selectable = true;
             desc.mouseEnabled = true;
         }, 50);
-
-        if (mod.dependencies != null) {
-            depsBox = new VBox();
-            depsBox.width = mainVBox.width - 55;
-            depsBox.padding = 5;
-            depsBox.styleString = 'background-color:#525252; background-opacity:.2; spacing:5px; border-radius:10px;';
-            mainVBox.addComponent(depsBox);
-            var depsGrid:Grid = new Grid();
-            depsGrid.columns = 3;
-            depsGrid.percentWidth = 100;
-            depsGrid.horizontalAlign = 'center';
-        
-            var anyMissing = false;
-            for (dependency in mod.dependencies) {
-                var dep:Button = new Button();
-                dep.text = dependency.name + (MainView.isModInstalled(dependency.name) ? ' (Installed' + (!MainView.isModEnabled(dependency.name) ? ', Disabled' : '') + ')' : '');
-                dep.onClick = (_) -> {
-                    var dialog = new DMAModInfoDialog(dependency);
-                    dialog.showDialog();
-                }
-                depsGrid.addComponent(dep);
-                if (!MainView.isModInstalled(dependency.name))
-                    anyMissing = true;
-            }
-            depsBox.addComponent(depsGrid);
-            if (anyMissing) {
-                var downloadAll:Button = new Button();
-                downloadAll.text = 'Download Missing Dependencies';
-                downloadAll.horizontalAlign = 'center';
-                downloadAll.onClick = (_) -> {
-                    for (dependency in mod.dependencies) {
-                        if (!MainView.isModInstalled(dependency.name))
-                            DMADownloader.downloadMod(dependency);
-                    }
-                }
-                depsBox.addComponent(downloadAll);
-            }
-        }
-
         onResize();
     }
 }

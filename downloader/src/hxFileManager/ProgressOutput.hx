@@ -1,5 +1,6 @@
 package hxFileManager;
 
+import haxe.Int64;
 import haxe.io.Output;
 import haxe.io.BytesBuffer;
 import haxe.io.Bytes;
@@ -10,14 +11,14 @@ class ProgressOutput extends Output {
     var _buf:BytesBuffer;
     var _fileOut:FileOutput;
     var _streaming:Bool;
-    var _onProgress:(Int, Int) -> Void;
-    var _total:Int;
+    var _onProgress:(Int64, Int64) -> Void;
+    var _total:Int64;
 
-    public var received:Int = 0;
+    public var received:Int64 = 0;
     public var closed:Bool = false;
     public var path:String = '';
 
-    public function new(total:Int, onProgress:(Int, Int) -> Void, ?savePath:String) {
+    public function new(total:Int64, onProgress:(Int64, Int64) -> Void, ?savePath:String) {
         _total = total;
         _onProgress = onProgress;
         _streaming = savePath != null && savePath != '';
@@ -36,8 +37,10 @@ class ProgressOutput extends Output {
         else
             _buf.addBytes(b, pos, len);
     
-        received += len;
+        received = Int64.add(received, Int64.ofInt(len));
+
         _onProgress(received, _total);
+
         return len;
     }
 

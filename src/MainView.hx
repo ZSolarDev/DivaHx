@@ -1,16 +1,9 @@
 package;
 
-import backend.online.dma.DMAMod;
-import components.dialogs.ScrollDialog;
-import components.dialogs.DMAModDownloadDialog;
-import backend.online.download.DownloadReport;
-import haxe.Json;
-import haxe.ui.containers.dialogs.Dialogs;
+import backend.online.download.DownloadReportManager;
 import backend.utils.Misc;
 import openfl.Lib;
 import lime.app.Application;
-import haxe.ui.events.UIEvent;
-import haxe.ui.core.Screen;
 import backend.utils.Update;
 import haxe.runtime.Copy;
 import sys.FileSystem;
@@ -32,18 +25,24 @@ class MainView extends VBox {
     public var curDs:ArrayDataSource<Dynamic> = null;
     public var oldEnabled:Bool = false;
     public var oldConsole:Bool = false;
-    public var trackingMReport:Bool = false;
     public var modsWatcher:Int = -1;
+    public var beganInvalid:Bool = false;
+    public var alreadyHeld:Bool = false;
     public static var modNameToMod:Map<String, String> = new Map<String, String>();
     public static var allMods:Array<String> = [];
     public static var enabledMods:Array<String> = [];
+    public static var instance:MainView;
 
     public function new() {
+        instance = this;
         Lib.application.window.setMinSize(1280, 720);
         Lib.application.window.resizable = false;
         super();
         var isValid = Validate.isValidMMPath();
-        modManager.disabled = !isValid;
+        modManagerTab.disabled = !isValid;
+        modBrowserTab.disabled = !isValid;
+        if (!isValid)
+            beganInvalid = true;
         mainTabs.pageIndex = isValid ? 0 : 1;
         regenDataSrc();
         playSteam.onClick = (_) -> {
@@ -59,38 +58,18 @@ class MainView extends VBox {
         Update.register(this, update);
         modsWatcher = FileManager.watchFolder(Path.join([Config.data.mmPath, modConfig.mods]), regenDataSrc);
     }
+    
 
     public function update(dt:Float) {
-        if (FileSystem.exists('MREPORT') && !trackingMReport) {
-            trackingMReport = true;
-            try {
-                var data:DownloadReport = Json.parse(File.getContent('MREPORT'));
-                var dialog:ScrollDialog = null;
-                if (data.type == 'error') {
-                    if (data.modType == 'dma' || data.modType == '')
-                        dialog = new DMAModDownloadDialog(data.title, '### ${data.title}\n${data.data}', true, ((data.mod == null) ? null : (data.mod:DMAMod)));
-                } else {
-                    if (data.modType == 'dma')
-                        dialog = new DMAModDownloadDialog(data.title, '#### ${data.data}', false, (data.mod:DMAMod));
-                }
-                if (dialog != null) {
-                    trace('Mod Download Report: ${data.title}');
-                    dialog.showDialog();
-                }
-                FileSystem.deleteFile('MREPORT');
-
-                trackingMReport = false;
-            } catch (e) {
-                var dialog:ScrollDialog = new ScrollDialog('Failed to display a Mod Download Report!', '### Failed to display a Mod Download Report!\nError: ${e.message}\nStack:${e.stack.toString()}', true);
-                dialog.showDialog();
-
-                FileSystem.deleteFile('MREPORT');
-                trackingMReport = false;
-            }
-        }
         var isValid = Validate.isValidMMPath();
-        modManager.disabled = !isValid;
+        modManagerTab.disabled = !isValid;
+        modBrowserTab.disabled = !isValid;
         if (isValid) {
+            if (mainTabs.pageIndex < 2)
+                modBrowser.hidden = true;
+            if (mainTabs.pageIndex == 2 && modBrowser.hidden)
+                modBrowser.hidden = false;
+
             if (curDs == null || modConfig == null)
                 regenDataSrc();
 
@@ -120,20 +99,26 @@ class MainView extends VBox {
             oldDs = Copy.copy(newDs);
             oldEnabled = modConfig.enabled;
             oldConsole = modConfig.console;
+        } else {
+            mainTabs.pageIndex = 1;
         }
     }
 
     public function saveModList() {
         var finalModList = [];
         var processedModList = [];
+        enabledMods = [];
+        
         for (modIdx in 0...modList.dataSource.size) {
             var mod = modList.dataSource.get(modIdx);
             if (mod.colEnabled) {
                 finalModList.push(modNameToMod.get(mod.colName) != null ? modNameToMod.get(mod.colName) : mod.colName);
                 processedModList.push('"${(modNameToMod.get(mod.colName) != null ? modNameToMod.get(mod.colName) : mod.colName)}"');
+                enabledMods.push(mod.colName);
             }
         }
         modConfig.priority = finalModList;
+        
         var configToml:StringBuf = new StringBuf();
         configToml.add('enabled = ${modConfig.enabled}\n');
         configToml.add('console = ${modConfig.console}\n');
@@ -182,7 +167,7 @@ class MainView extends VBox {
                     curDs.add({ colEnabled: (oldAllMods.length > 0 && !oldAllMods.contains(getModName(mod))), colName: getModName(mod), colSize: Misc.formatBytes(getFolderSize(Path.join([Config.data.mmPath, modConfig.mods, mod]))) });
                 var name = getModName(mod);
                 if (name != '') {
-                    if (priority.contains(name))
+                    if (priority.contains(mod))
                         enabledMods.push(name);
                     allMods.push(name);
                 }
@@ -194,9 +179,12 @@ class MainView extends VBox {
     }
 
     function getModName(mod:String):String {
-        var name = getModNameFromToml(File.getContent(Path.join([Config.data.mmPath, modConfig.mods, mod, 'config.toml'])));
-        if (name != '')
-            return name;
+        var path = Path.join([Config.data.mmPath, modConfig.mods, mod, 'config.toml']);
+        if (FileSystem.exists(path)) {
+            var name = getModNameFromToml(File.getContent(path));
+            if (name != '')
+                return name;
+        }
         return mod;
     }
     
@@ -207,10 +195,27 @@ class MainView extends VBox {
         return '';
     }
 
+    public static function isModInstalled(searchName:String):Bool {
+        var cleanSearch = searchName.toLowerCase().trim();
+        for (modName in allMods) {
+            if (modName.toLowerCase().trim() == cleanSearch) return true;
+        }
+        return false;
+    }
+
+    public static function isModEnabled(searchName:String):Bool {
+        var cleanSearch = searchName.toLowerCase().trim();
+        for (modName in enabledMods) {
+            if (modName.toLowerCase().trim() == cleanSearch) return true;
+        }
+        return false;
+    }
+
     override function disposeComponent() {
         super.disposeComponent();
         if (modsWatcher != -1)
             FileManager.stopWatcher(modsWatcher);
         Update.unregister(this);
+        DownloadReportManager.dispose();
     }
 }

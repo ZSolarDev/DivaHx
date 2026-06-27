@@ -1,6 +1,6 @@
 <vbox width="100%" height="100%" styleName="default-background">
     <tabview id="mainTabs" width="100%" height="100%">
-        <hbox text="Manage Mods" icon="resources/icons/adjustments.svg" id="modManager" percentWidth="100" percentHeight="100" style="padding: 10px; spacing: 10px;">
+        <hbox text="Manage Mods" icon="resources/icons/adjustments.svg" id="modManagerTab" percentWidth="100" percentHeight="100" style="padding: 10px; spacing: 10px;">
             <frame text="Mod List" percentWidth="100" percentHeight="100">
                 <modlist id="modList" />
             </frame>
@@ -38,7 +38,7 @@
             <configuration />
         </box>
         <box text="Mod Browser" icon="resources/icons/play.svg" style=".icon { width: 40px; height: 40px; }" id="modBrowserTab" percentWidth="100" percentHeight="100">
-            <modbrowser />
+            <modbrowser id="modBrowser"/>
         </box>
     </tabview>
 </vbox>
