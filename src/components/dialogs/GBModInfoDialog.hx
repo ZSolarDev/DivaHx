@@ -136,8 +136,8 @@ class GBModInfoDialog extends Dialog {
 
             curImageText.text = 'Image ${curImageIdx + 1}/${mod._aPreviewMedia._aImages.length}';
 
-        }).onError((_) -> {
-            // TODO: handle error
+        }).onError((e) -> {
+            trace('Error loading image: $e');
         });
     }
 

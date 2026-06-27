@@ -19,7 +19,8 @@ class Report {
                 title: 'Processing of mod data failed!',
                 data: (details != null ? '$details\n' : '') + 'Error: ${e.message}\nStack: ${e.stack.toString()}',
                 modType: '',
-                mod: null
+                mod: null,
+                modData: null
             };
         } else {
             if (isDma)
@@ -28,7 +29,8 @@ class Report {
                 title: 'Failed to download mod "${((isDma ? dmaMod.name : gbMod._sName))}"!',
                 data: (details != null ? '$details\n' : '') + 'Error: ${e.message}\nStack: ${e.stack.toString()}',
                 modType: (isDma ? 'dma' : 'gb'),
-                mod: ((isDma ? dmaMod : gbMod):Dynamic)
+                mod: ((isDma ? dmaMod : gbMod):Dynamic),
+                modData: ((isDma ? null : gbModData):Dynamic)
             };
         }
         

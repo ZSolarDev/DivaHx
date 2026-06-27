@@ -1,8 +1,11 @@
 package backend.online.download;
 
+import backend.online.gamebanana.GBModData;
+import backend.online.gamebanana.GBMod;
 import backend.online.dma.DMAMod;
 import hxFileManager.FileManager;
 import components.dialogs.DMAModDownloadDialog;
+import components.dialogs.GBModDownloadDialog;
 import components.dialogs.ScrollDialog;
 import sys.io.File;
 import haxe.Json;
@@ -36,12 +39,11 @@ class DownloadReportManager {
                 var data:FailedDownloadReport = Json.parse(File.getContent('MREPORT'));
                 var dialog:ScrollDialog = null;
                 
-                if (data.modType == 'dma' || data.modType == '') {
+                if (data.modType == 'dma' || data.modType == '')
                     dialog = new DMAModDownloadDialog(data.title, '### ${data.title}\n${data.data}', true, ((data.mod == null) ? null : (data.mod:DMAMod)));
-                } else if (data.modType == 'gb') {
-                    // Fallback to ScrollDialog for GameBanana to avoid type mismatch
-                    dialog = new ScrollDialog(data.title, '### ${data.title}\n${data.data}', true);
-                }
+                else if (data.modType == 'gb')
+                    dialog = new GBModDownloadDialog(data.title, '### ${data.title}\n${data.data}', true, (data.mod:GBMod), (data.modData:GBModData));
+                
 
                 if (dialog != null) {
                     trace('Mod download report: ${data.title}');
@@ -70,7 +72,6 @@ class DownloadReportManager {
                         report = Json.parse(line);
                 }
                 
-                // Dynamically get the mod name
                 var modName = report.modType == 'gb' ? report.mod._sName : report.mod.name;
                 trace('Registered new mod download report: $modName');
                 
@@ -94,15 +95,14 @@ class DownloadReportManager {
                     var complete = false;
                     var dialog:ScrollDialog = null;
                     
-                    // Safely grab the correct mod name based on type
                     var modName = report.modType == 'gb' ? report.mod._sName : report.mod.name;
 
                     if (report.extractionLog.contains('ERROR: ')) {
-                        if (report.modType == 'dma' || report.modType == '') {
+                        if (report.modType == 'dma' || report.modType == '')
                             dialog = new DMAModDownloadDialog('Failed to extract mod "$modName"!', '### Failed to extract mod "$modName"!\n7-Zip log:\n${report.extractionLog}', true, (report.mod:DMAMod));
-                        } else if (report.modType == 'gb') {
-                            dialog = new ScrollDialog('Failed to extract mod "$modName"!', '### Failed to extract mod "$modName"!\n7-Zip log:\n${report.extractionLog}', true);
-                        }
+                        else if (report.modType == 'gb')
+                            dialog = new GBModDownloadDialog('Failed to extract mod "$modName"!', '### Failed to extract mod "$modName"!\n7-Zip log:\n${report.extractionLog}', true, (report.mod:GBMod), (report.modData:GBModData));
+                        
                         
                         trace('Mod download report: Failed to extract mod "$modName"!');
                         complete = true;
@@ -110,26 +110,21 @@ class DownloadReportManager {
                         var fileName = 'Unknown File'; 
 
                         if (report.modType == 'gb' && report.modData != null) {
-                            // Rebuild the keys array to match the index
                             var gbFileKeys = Reflect.fields(report.modData.filesAFiles);
                             
-                            // Ensure the index hasn't gone out of bounds
                             if (report.fileIdx >= 0 && report.fileIdx < gbFileKeys.length) {
                                 var fileInfo:Dynamic = Reflect.field(report.modData.filesAFiles, gbFileKeys[report.fileIdx]);
-                                if (fileInfo != null && fileInfo._sFile != null) {
+                                if (fileInfo != null && fileInfo._sFile != null)
                                     fileName = fileInfo._sFile;
-                                }
                             }
-                        } else if (report.modType == 'dma' || report.modType == '') {
+                        } else if (report.modType == 'dma' || report.modType == '')
                             fileName = report.mod.file_names[report.fileIdx];
-                        }
                         
-                        // Spawn the correct dialog with the actual file name
-                        if (report.modType == 'dma' || report.modType == '') {
+                        if (report.modType == 'dma' || report.modType == '')
                             dialog = new DMAModDownloadDialog('Successfully downloaded mod "$modName"!', '##### Successfully downloaded mod "$modName"!\nThe file "$fileName" has been installed as a mod.', false, (report.mod:DMAMod));
-                        } else if (report.modType == 'gb') {
-                            dialog = new ScrollDialog('Successfully downloaded mod "$modName"!', '##### Successfully downloaded mod "$modName"!\n"$fileName" has been installed as a mod.', false);
-                        }
+                        else if (report.modType == 'gb')
+                            dialog = new GBModDownloadDialog('Successfully downloaded mod "$modName"!', '##### Successfully downloaded mod "$modName"!\n"$fileName" has been installed as a mod.', false, (report.mod:GBMod), (report.modData:GBModData));
+                        
                         
                         trace('Mod download report: Successfully downloaded mod "$modName"!');
                         complete = true;

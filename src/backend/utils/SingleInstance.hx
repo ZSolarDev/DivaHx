@@ -11,11 +11,11 @@ class SingleInstance {
     private static var activeStream:FileOutput;
 
     public static function check():Bool {
-        var lockDir = Sys.getEnv("TEMP");
-        if (lockDir == null || lockDir == "") lockDir = Sys.getEnv("TMPDIR");
-        if (lockDir == null || lockDir == "") lockDir = "./";
+        var lockDir = Sys.getEnv('TEMP');
+        if (lockDir == null || lockDir == '') lockDir = Sys.getEnv('TMPDIR');
+        if (lockDir == null || lockDir == '') lockDir = './';
 
-        lockPath = Path.join([lockDir, "DivaHX_boot.lock"]);
+        lockPath = Path.join([lockDir, 'DivaHX_boot.lock']);
 
         // 1. If it doesn't exist at all, we are the first instance
         if (!FileSystem.exists(lockPath))
@@ -43,7 +43,7 @@ class SingleInstance {
 
     private static function claimLock():Bool {
         try {
-            File.saveContent(lockPath, "DivaHX Running");
+            File.saveContent(lockPath, 'DivaHX Running');
             
             activeStream = File.append(lockPath, false);
 

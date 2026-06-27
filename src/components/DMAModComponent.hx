@@ -152,8 +152,17 @@ class DMAModComponent extends VBox {
             authorBox.addComponent(authorName);
             mainBox.addComponent(authorBox);
             loadModData();
-        }).onError((error) -> { // TODO: MAKE FAIL ASSET
-            
+        }).onError((error) -> {
+            authorBox = new HBox();
+            authorBox.styleString = 'padding:5px; spacing:5px;';
+            authorBox.horizontalAlign = 'left';
+            var authorName:Label = new Label();
+            authorName.text = author.display_name.trim();
+            authorName.verticalAlign = 'center';
+            authorName.horizontalAlign = 'left';
+            authorBox.addComponent(authorName);
+            mainBox.addComponent(authorBox);
+            loadModData();
         });
     }
 
