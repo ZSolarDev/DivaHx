@@ -7,7 +7,7 @@ import sys.io.File;
 class Config {
     public static var data:ConfigData = { 
         mmPath: ''
-    };
+    }
 
     public static function bind() {
         var hasConfig = FileSystem.exists('./config.dhxc');

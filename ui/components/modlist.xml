@@ -1,16 +1,26 @@
 <draggable-tableview width="100%" height="100%">
-    <header width="100%">
-        <column id="colEnabled" text="Enabled" width="70" />
-        <column id="colName" text="Mod Name" width="100%" />
-        <column id="colSize" text="Size" width="100%" />
+    <header width="100%" height="37">
+        <column id="colEnabled" text="Enabled" width="70" height="100%" verticalAlign="center" />
+        <column id="colName" width="70%" height="100%" verticalAlign="center">
+            <hbox width="100%" verticalAlign="center">
+                <label text="Mod Name" verticalAlign="center" />
+                <spacer width="10%" />
+                <textfield id="modNameFilter" placeholder="Search..." width="90%" horizontalAlign="right" verticalAlign="center" />
+            </hbox>
+        </column>
+        <column id="colSize" text="Size" width="30%" height="100%" verticalAlign="center" />
+        <column id="colActions" text="Actions" width="120" height="100%" verticalAlign="center" />
     </header>
-    <item-renderer verticalAlign="center" horizontalAlign="center">
-        <checkbox id="colEnabled" />
+    <item-renderer verticalAlign="center" horizontalAlign="center" width="100%">
+        <checkbox id="colEnabled" horizontalAlign="center" />
     </item-renderer>
     <item-renderer verticalAlign="center">
         <label id="colName" width="100%" />
     </item-renderer>
     <item-renderer verticalAlign="center">
         <label id="colSize" width="100%" />
+    </item-renderer>
+    <item-renderer verticalAlign="center" horizontalAlign="center">
+        <button id="colActions" text="Actions..." width="100" />
     </item-renderer>
 </draggable-tableview>

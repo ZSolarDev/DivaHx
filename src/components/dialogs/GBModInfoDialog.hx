@@ -79,7 +79,7 @@ class GBModInfoDialog extends Dialog {
         var modInfoButton = new Button();
         modInfoButton.text = 'Mod Info';
         modInfoButton.onClick = (_) -> {
-            Lib.getURL(new URLRequest('https://divamodarchive.com/post/${mod._idRow}'));
+            Lib.getURL(new URLRequest('https://gamebanana.com/mods/${mod._idRow}'));
         }
         addFooterComponent(modInfoButton);
     }

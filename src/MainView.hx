@@ -1,5 +1,20 @@
 package;
 
+import sys.thread.Thread;
+import haxe.ui.Toolkit;
+import hxFileManager.HttpManager;
+import haxe.Timer;
+import components.dialogs.ScrollDialog;
+import haxe.ui.notifications.NotificationType;
+import haxe.ui.notifications.NotificationManager;
+import haxe.ui.containers.menus.MenuSeparator;
+import components.dialogs.TextEditDialog;
+import haxe.ui.events.ItemEvent;
+import haxe.ui.core.Screen;
+import haxe.ui.containers.menus.MenuItem;
+import haxe.ui.containers.menus.Menu;
+import haxe.ui.components.Button;
+import haxe.ui.events.UIEvent;
 import backend.online.download.DownloadReportManager;
 import backend.utils.Misc;
 import openfl.Lib;
@@ -14,6 +29,7 @@ import backend.utils.Validate;
 import backend.utils.Config;
 import haxe.ui.containers.VBox;
 import haxetoml.TomlParser;
+import backend.utils.ModTomlProcessor;
 import hxFileManager.FileManager;
 
 using StringTools;
@@ -28,6 +44,8 @@ class MainView extends VBox {
     public var modsWatcher:Int = -1;
     public var beganInvalid:Bool = false;
     public var alreadyHeld:Bool = false;
+    public var hasInternet:Bool = false;
+    public var internetChecked:Bool = false;
     public static var modNameToMod:Map<String, String> = new Map<String, String>();
     public static var allMods:Array<String> = [];
     public static var enabledMods:Array<String> = [];
@@ -40,7 +58,15 @@ class MainView extends VBox {
         super();
         var isValid = Validate.isValidMMPath();
         modManagerTab.disabled = !isValid;
-        modBrowserTab.disabled = !isValid;
+        modBrowserTab.disabled = !isValid || !hasInternet;
+        if (!hasInternet && internetChecked)
+            modBrowserTab.text = 'Mod Browser (No Internet Connection)';
+        else if (!internetChecked)
+            modBrowserTab.text = 'Mod Browser (Checking Internet...)';
+        else
+            modBrowserTab.text = 'Mod Browser';
+        if (!hasInternet && mainTabs.pageIndex == 2)
+            mainTabs.pageIndex = 0;
         if (!isValid)
             beganInvalid = true;
         mainTabs.pageIndex = isValid ? 0 : 1;
@@ -54,16 +80,164 @@ class MainView extends VBox {
         githubButton.onClick = (_) -> {
             Sys.command('cmd /c start "" "https://github.com/ZSolarDev/DivaHX"');
         }
+        Thread.create(() -> {
+            new Timer(5000).run = () -> {
+                hasInternet = HttpManager.hasInternet;
+                internetChecked = true;
+            } 
+        });
+        modList.onComponentEvent = (e:UIEvent) -> {
+            var source = Reflect.field(e, 'source');
+            if (e.type == ItemEvent.COMPONENT_EVENT && (source is Button) && cast(source, Button).id == 'colActions') {
+                //var button:Button = cast source;
+                var rowData = e.data;
+
+                var menu = new Menu();
+
+                var menuItems:Array<MenuItemData> = [
+                    {
+                        text: 'Delete Mod',
+                        disabledText: 'Mod not found...',
+                        condition: () -> {
+                            return FileSystem.exists(Path.join([Config.data.mmPath, modConfig.mods, modNameToMod.get(rowData.colName)]));
+                        },
+                        onClick: () -> {
+                            var modName = modNameToMod.get(rowData.colName);
+                            var modPath = Path.join([Config.data.mmPath, modConfig.mods, modName]);
+                            FileManager.deletePathAsync(modPath, () -> {
+                                NotificationManager.instance.addNotification({
+                                    title: 'Mod Deleted',
+                                    body: 'Mod "${rowData.colName}" has been deleted.',
+                                    expiryMs: -1,
+                                    type: NotificationType.Success
+                                });
+                                regenDataSrc();
+                            }, (error) -> {
+                                if (error.contains('SysError')) {
+                                    FileManager.deleteElevated(modPath, () -> {
+                                        NotificationManager.instance.addNotification({
+                                            title: 'Mod Deleted',
+                                            body: 'Mod "${rowData.colName}" has been deleted (with admin rights).',
+                                            expiryMs: -1,
+                                            type: NotificationType.Success
+                                        });
+                                        regenDataSrc();
+                                    }, (elevatedError) -> {
+                                        NotificationManager.instance.addNotification({
+                                            title: 'Mod Deletion Failed',
+                                            body: 'Mod "${rowData.colName}" failed to delete even with admin rights. Error: $elevatedError',
+                                            expiryMs: -1,
+                                            type: NotificationType.Error
+                                        });
+                                    });
+                                } else {
+                                    NotificationManager.instance.addNotification({
+                                        title: 'Mod Deleted',
+                                        body: 'Mod "${rowData.colName}" failed to delete. Error: $error',
+                                        expiryMs: -1,
+                                        type: NotificationType.Error
+                                    });
+                                }
+                            });
+                        },
+                        isSeparator: false
+                    },
+                    {
+                        text: 'Open Mod Folder',
+                        disabledText: 'Mod Folder not found...',
+                        condition: () -> {
+                            return FileSystem.exists(Path.join([Config.data.mmPath, modConfig.mods, modNameToMod.get(rowData.colName)]));
+                        },
+                        onClick: () -> {
+                            var folderPath = Path.join([Config.data.mmPath, modConfig.mods, modNameToMod.get(rowData.colName)]);
+                            folderPath = folderPath.split('/').join('\\');
+                            Sys.command('explorer.exe', [folderPath]);
+                        },
+                        isSeparator: false
+                    },
+                    {
+                        text: '',
+                        disabledText: '',
+                        condition: null,
+                        onClick: null,
+                        isSeparator: true
+                    },
+                    {
+                        text: 'Mod Info',
+                        disabledText: 'Mod config.toml not found...',
+                        condition: () -> {
+                            return getModToml(modNameToMod.get(rowData.colName)) != '';
+                        },
+                        onClick: () -> {
+                            var modInfo = ModTomlProcessor.buildModInfoString(getModToml(modNameToMod.get(rowData.colName)));
+                            var dialog = new ScrollDialog('Mod Info for "${rowData.colName}"', modInfo, true);
+                            dialog.showDialog();
+                        },
+                        isSeparator: false
+                    },
+                    {
+                        text: 'Configure Mod',
+                        disabledText: 'Mod cannot be configured...',
+                        condition: () -> {
+                            return getModToml(modNameToMod.get(rowData.colName)) != '' && ModTomlProcessor.hasNonCommentLine(ModTomlProcessor.stripMetadataLines(getModToml(modNameToMod.get(rowData.colName))).res);
+                        },
+                        onClick: () -> {
+                            var modToml = getModToml(modNameToMod.get(rowData.colName));
+                            var res = ModTomlProcessor.stripMetadataLines(modToml);
+                            var metadata = res.metadata;
+                            var dialog = new TextEditDialog('Edit config for "${rowData.colName}"', res.res, true, (newData:String) -> {
+                                var finalToml = '${metadata.join('\n')}\n$newData';
+                                File.saveContent(Path.join([Config.data.mmPath, modConfig.mods, modNameToMod.get(rowData.colName), 'config.toml']), finalToml);
+                            });
+                            dialog.showDialog();
+                        },
+                        isSeparator: false
+                    },
+                ];
+                for (menuItemData in menuItems) {
+                    if (menuItemData.isSeparator) {
+                        var separator = new MenuSeparator();
+                        separator.percentWidth = 100;
+                        menu.addComponent(separator);
+                    } else {
+                        var menuItem = new MenuItem();
+                        if (menuItemData.condition()) {
+                            menuItem.text = menuItemData.text;
+                            menuItem.onClick = (_) -> menuItemData.onClick();
+                        } else {
+                            menuItem.text = menuItemData.disabledText;
+                            menuItem.disabled = true;
+                        }
+                        menu.addComponent(menuItem);
+                    }
+                }
+
+                Screen.instance.addComponent(menu);
+                var thresholdY = Screen.instance.height * 0.85;
+                if (Screen.instance.currentMouseY < thresholdY)
+                    menu.top = Screen.instance.currentMouseY + 1;
+                else
+                    menu.top = Screen.instance.currentMouseY - menu.height - 1;
+                menu.left = Screen.instance.currentMouseX + 1;
+            }
+        }
         metadataText.htmlText = 'DivaHx V${Application.current.meta.get('version')}&#10;<font color="#888888" size="14">Created by ZSolarDev with Haxe</font>';
         Update.register(this, update);
         modsWatcher = FileManager.watchFolder(Path.join([Config.data.mmPath, modConfig.mods]), regenDataSrc);
     }
-    
 
     public function update(dt:Float) {
         var isValid = Validate.isValidMMPath();
         modManagerTab.disabled = !isValid;
-        modBrowserTab.disabled = !isValid;
+        modBrowserTab.disabled = !isValid || !hasInternet;
+        if (!hasInternet && mainTabs.pageIndex == 2)
+            mainTabs.pageIndex = 0;
+        if (!hasInternet && internetChecked)
+            modBrowserTab.text = 'Mod Browser (No Internet Connection)';
+        else if (!internetChecked)
+            modBrowserTab.text = 'Mod Browser (Checking Internet...)';
+        else
+            modBrowserTab.text = 'Mod Browser';
         if (isValid) {
             if (mainTabs.pageIndex < 2)
                 modBrowser.hidden = true;
@@ -108,9 +282,11 @@ class MainView extends VBox {
         var finalModList = [];
         var processedModList = [];
         enabledMods = [];
-        
-        for (modIdx in 0...modList.dataSource.size) {
-            var mod = modList.dataSource.get(modIdx);
+
+        var ds:ArrayDataSource<Dynamic> = cast modList.dataSource;
+        var rawArray = @:privateAccess ds._array;
+
+        for (mod in rawArray) {
             if (mod.colEnabled) {
                 finalModList.push(modNameToMod.get(mod.colName) != null ? modNameToMod.get(mod.colName) : mod.colName);
                 processedModList.push('"${(modNameToMod.get(mod.colName) != null ? modNameToMod.get(mod.colName) : mod.colName)}"');
@@ -118,7 +294,7 @@ class MainView extends VBox {
             }
         }
         modConfig.priority = finalModList;
-        
+
         var configToml:StringBuf = new StringBuf();
         configToml.add('enabled = ${modConfig.enabled}\n');
         configToml.add('console = ${modConfig.console}\n');
@@ -149,6 +325,7 @@ class MainView extends VBox {
 
     public function regenDataSrc() {
         if (Validate.isValidMMPath()) {
+            modList.resetFilter();
             var oldAllMods:Array<String> = (allMods != null) ? Copy.copy(allMods) : [];
             allMods = [];
             enabledMods = [];
@@ -160,11 +337,11 @@ class MainView extends VBox {
             curDs.allowCallbacks = true;
             var priority:Array<String> = modConfig.priority;
             for (mod in priority)
-                curDs.add({ colEnabled: true, colName: getModName(mod), colSize: Misc.formatBytes(getFolderSize(Path.join([Config.data.mmPath, modConfig.mods, mod]))) });
+                curDs.add({ colEnabled: true, colName: getModName(mod), colSize: Misc.formatBytes(getFolderSize(Path.join([Config.data.mmPath, modConfig.mods, mod]))), colActions: 'Actions...' });
             for (mod in realModList) {
                 modNameToMod.set(getModName(mod), mod);
                 if (!priority.contains(mod))
-                    curDs.add({ colEnabled: (oldAllMods.length > 0 && !oldAllMods.contains(getModName(mod))), colName: getModName(mod), colSize: Misc.formatBytes(getFolderSize(Path.join([Config.data.mmPath, modConfig.mods, mod]))) });
+                    curDs.add({ colEnabled: (oldAllMods.length > 0 && !oldAllMods.contains(getModName(mod))), colName: getModName(mod), colSize: Misc.formatBytes(getFolderSize(Path.join([Config.data.mmPath, modConfig.mods, mod]))), colActions: 'Actions...' });
                 var name = getModName(mod);
                 if (name != '') {
                     if (priority.contains(mod))
@@ -178,21 +355,21 @@ class MainView extends VBox {
         }
     }
 
-    function getModName(mod:String):String {
-        var path = Path.join([Config.data.mmPath, modConfig.mods, mod, 'config.toml']);
-        if (FileSystem.exists(path)) {
-            var name = getModNameFromToml(File.getContent(path));
+    function getModToml(dirtyModName:String):String {
+        var path = Path.join([Config.data.mmPath, modConfig.mods, dirtyModName, 'config.toml']);
+        if (FileSystem.exists(path))
+            return File.getContent(path);
+        return '';
+    }
+
+    function getModName(dirtyModName:String):String {
+        var modToml = getModToml(dirtyModName);
+        if (modToml != '') {
+            var name = ModTomlProcessor.getModStringFromToml(modToml, 'name');
             if (name != '')
                 return name;
         }
-        return mod;
-    }
-    
-    function getModNameFromToml(tomlContent:String):String {
-        var regex = ~/^\s*name\s*=\s*"([^"]*)"\s*$/m;
-        if (regex.match(tomlContent)) 
-            return regex.matched(1);
-        return '';
+        return dirtyModName;
     }
 
     public static function isModInstalled(searchName:String):Bool {
@@ -218,4 +395,12 @@ class MainView extends VBox {
         Update.unregister(this);
         DownloadReportManager.dispose();
     }
+}
+
+typedef MenuItemData = {
+    var text:String;
+    var disabledText:String;
+    var condition:Void->Bool;
+    var onClick:Void->Void;
+    var isSeparator:Bool;
 }

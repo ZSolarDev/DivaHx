@@ -1058,6 +1058,46 @@ class FileManager {
 		});
 	}
 
+    public static function deleteElevated(path:String, ?onDone:Void->Void, ?onError:String->Void):Void {
+        var logPath = Path.join([rootDir, 'elevated_delete_err_${Std.string(Date.now().getTime())}.log']);
+        var normalizedPath = Path.normalize(path);
+
+        var isDir = folderExists(normalizedPath);
+        var deleteCmd = isDir
+            ? 'rmdir /s /q "$normalizedPath"'
+            : 'del /f /q "$normalizedPath"';
+
+        var innerCmd = '$deleteCmd >nul 2>"$logPath"';
+        var psCommand = 'Start-Process -FilePath "cmd.exe" -ArgumentList \'/c $innerCmd\' -Verb RunAs -Wait';
+        var exitCode = Sys.command('powershell', ['-NoProfile', '-Command', psCommand]);
+
+        var logContent = '';
+        if (fileExists(logPath))
+            try logContent = File.getContent(logPath).trim() catch (_) {}
+
+        if (exitCode != 0) {
+            var msg = logContent != '' ? logContent : 'Elevation request failed or was denied (exit code $exitCode).';
+            cleanupLog(logPath);
+            if (onError != null) onError(msg);
+            return;
+        }
+
+        var stillExists = FileSystem.exists(normalizedPath);
+
+        if (!stillExists) {
+            cleanupLog(logPath);
+            if (onDone != null) onDone();
+        } else {
+            var errMsg = logContent != '' ? logContent : 'Deletion failed for an unknown reason (path still exists at $normalizedPath).';
+            cleanupLog(logPath);
+            if (onError != null) onError(errMsg);
+        }
+    }
+
+    static function cleanupLog(logPath:String):Void {
+        try if (fileExists(logPath)) FileSystem.deleteFile(logPath) catch (_) {}
+    }
+
 	/**
 	 * Request administrator or elevated privileges, re-launching the process if needed. Only works on native cpp targets.
 	 * @param onSuccess Optional callback on success.

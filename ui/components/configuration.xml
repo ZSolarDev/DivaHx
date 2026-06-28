@@ -1,10 +1,14 @@
-<vbox style="padding: 5px; width: 500; height: 500;">
-    <hbox style="padding: 5px; width: 600; height: auto;" verticalAlign="center">
-        <button text="Set MM+ path" id="setmmpath" icon="resources/icons/folder-open.svg" style=".icon { width: 40px; height: 40px; }" width="28%" />
-        <label text="Select MM+ Path ^" id="mmpath" width="100%" verticalAlign="center" style="padding-left: 5px; font-size: 12px;" />
-    </hbox>
-    <hbox style="padding: 5px; width: 500;">
-        <button text="Apply" id="applyButton" />
-        <button text="Reset" id="resetButton" />
-    </hbox>
+<vbox style="padding: 5px; width: 600; height: 500;">
+    <frame text="Hatsune Miku: Project DIVA Mega Mix+ Installation" style="padding: 5px;">
+        <vbox style="padding: 5px; width: auto; height: auto;">
+            <hbox style="padding: 5px; width: 490; height: auto;" verticalAlign="center">
+                <button text="Set MM+ path" id="setmmpath" icon="resources/icons/folder-open.svg" style=".icon { width: 40px; height: 40px; }" width="28%" />
+                <label text="Select MM+ Path ^" id="mmpath" width="100%" verticalAlign="center" style="padding-left: 5px; font-size: 12px;" />
+            </hbox>
+            <hbox style="padding: 5px; width: 600;">
+                <button text="Apply" id="applyButton" />
+                <button text="Reset" id="resetButton" />
+            </hbox>
+        </vbox>
+    </frame>
 </vbox>

@@ -49,11 +49,11 @@ class Main {
                         if (FileSystem.exists(Path.join([data.mmPath, modPath])))
                             mmModPath = Path.join([data.mmPath, modPath]);
                         else
-                            throw new Exception('Your Project Diva Mega Mix+ mods folder specified in config.toml was not found! Is DML configured correctly?');
+                            throw new Exception('Your Hatsune Miku: Project DIVA Mega Mix+ mods folder specified in config.toml was not found! Is DML configured correctly?');
                     } else 
-                        throw new Exception('Your Project Diva Mega Mix+ config.toml was not found! Is DML installed?');
+                        throw new Exception('Your Hatsune Miku: Project DIVA Mega Mix+ config.toml was not found! Is DML installed?');
                 } else
-                    throw new Exception('Your Project Diva Mega Mix+ was not found! Have you configured DivaHx?');
+                    throw new Exception('Your Hatsune Miku: Project DIVA Mega Mix+ was not found! Have you configured DivaHx?');
             } else
                 throw new Exception('Your DivaHx config was not found!');
         } catch (e) {

@@ -80,7 +80,7 @@ class Validate {
         }
 
         trace('Validation failed. The path:\n$path\ndoes not exist.');
-        return {isValid: false, details: 'Could not find a %%Hatsune Miku Project DIVA Mega Mix Plus%% installation at path: \n@@$path@@'};
+        return {isValid: false, details: 'Could not find a %%Hatsune Miku: Project DIVA Mega Mix+%% installation at path: \n@@$path@@'};
     }
 
     static function checkModded(files:Array<String>):{isValid:Bool, details:String} {
@@ -107,7 +107,7 @@ class Validate {
         // Build error message if needed
         var error = '';
         if (!isModded) 
-            error = 'Your %%Hatsune Miku Project DIVA Mega Mix Plus%% installation is missing the following files required by %%Diva Mod Loader%% :\n\n@@${nonexistant.join('\n')}@@\n\nEnsure %%Diva Mod Loader%% is installed! Download it ##here##.';
+            error = 'Your %%Hatsune Miku: Project DIVA Mega Mix+%% installation is missing the following files required by %%Diva Mod Loader%% :\n\n@@${nonexistant.join('\n')}@@\n\nEnsure %%Diva Mod Loader%% is installed! Download it ##here##.';
         
         return {isValid: isModded, details: error};
     }
@@ -145,7 +145,7 @@ class Validate {
         // Build error message if needed
         var error = '';
         if (nonexistant.length > 0)
-            error += 'Your %%Hatsune Miku Project DIVA Mega Mix Plus%% installation is missing the following files:\n\n@@${nonexistant.join('\n')}@@\n\nIs this the right path to the installation? @@$path@@';
+            error += 'Your %%Hatsune Miku: Project DIVA Mega Mix+%% installation is missing the following files:\n\n@@${nonexistant.join('\n')}@@\n\nIs this the right path to the installation? @@$path@@';
         if (corrupt.length > 0) {
             if (error.length > 0) error += '\n\n';
             error += 'The following files appear to be corrupted:\n\n@@${corrupt.join('\n')}@@\n\nTry verifying your game files through Steam.';

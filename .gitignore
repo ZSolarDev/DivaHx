@@ -1,4 +1,5 @@
 build/
+builds/
 .vscode/
 downloader/build.bat
 downloader/build/

@@ -1,5 +1,6 @@
 package components;
 
+import haxe.ui.data.ArrayDataSource;
 import haxe.ui.containers.TableView;
 import haxe.ui.events.MouseEvent;
 import haxe.ui.core.ItemRenderer;
@@ -10,6 +11,7 @@ import openfl.Lib;
 
 class DraggableTableView extends TableView {
     // I lowkey need to clean this up..
+    // This is future me. aw HELL NAH I AINT CLEANIN THIS SHIT UP. I'm too lazy for allat.
     var dragIndex:Int = -1;
     var dropIndex:Int = -1;
     var isDragging:Bool = false;
@@ -71,17 +73,38 @@ class DraggableTableView extends TableView {
 
         haxe.ui.core.Screen.instance.registerEvent(MouseEvent.MOUSE_UP, function(e:MouseEvent) {
             clearGhost();
-        
+
             if (!isDragging || dragIndex < 0 || dropIndex < 0 || dragIndex == dropIndex) {
                 resetTableView();
                 return;
             }
         
-            var item = dataSource.get(dragIndex);
-            dataSource.removeAt(dragIndex);
-            dataSource.insert(dropIndex, item);
+            var ds:ArrayDataSource<Dynamic> = cast dataSource;
+        
+            var draggedItem = ds.get(dragIndex);
+            var targetItem = ds.get(dropIndex);
+        
+            @:privateAccess {
+                ds._array.remove(draggedItem);
+                var rawTargetIndex = ds._array.indexOf(targetItem);
+
+                var insertIndex = (dragIndex < dropIndex) ? rawTargetIndex + 1 : rawTargetIndex;
+                ds._array.insert(insertIndex, draggedItem);
+
+                if (ds._filteredArray != null) {
+                    ds._filteredArray.remove(draggedItem);
+                    var filteredTargetIndex = ds._filteredArray.indexOf(targetItem);
+                    var filteredInsertIndex = (dragIndex < dropIndex) ? filteredTargetIndex + 1 : filteredTargetIndex;
+                    ds._filteredArray.insert(filteredInsertIndex, draggedItem);
+                }
+            
+                ds.handleChanged();
+            }
+        
             selectedIndex = dropIndex;
             resetTableView();
+        
+            if (onDataChange != null) onDataChange();
         });
     }
 

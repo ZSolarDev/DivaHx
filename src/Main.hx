@@ -1,5 +1,6 @@
 package;
 
+import hl.UI;
 import backend.online.download.DownloadReportManager;
 import backend.utils.SingleInstance;
 import boot.BootError;
@@ -15,6 +16,9 @@ class Main {
     public static var app:HaxeUIApp;
     
     public static function main() {
+        #if (!debug)
+        UI.closeConsole();
+        #end
         if (!SingleInstance.check()) {
             // Another instance is running
             Toolkit.theme = Theme.DARK;
