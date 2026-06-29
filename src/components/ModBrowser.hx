@@ -1,5 +1,6 @@
 package components;
 
+import hl.Gc;
 import backend.online.gamebanana.GB;
 import backend.online.gamebanana.GBCategory;
 import backend.online.gamebanana.GBSortType;
@@ -198,7 +199,8 @@ class ModBrowser extends VBox {
         modBrowserTopMenu.addComponent(spacer);
 
         switchButton = new MenuItem();
-        switchButton.text = ((currentType) ? 'Switch to Diva Mod Archive' : 'Switch to GameBanana');
+        switchButton.text = ((currentType) ? 'Switch to Diva Mod Archive' : 'Switch to GameBanana (WIP)');
+        switchButton.disabled = true;
         switchButton.verticalAlign = 'center';
         switchButton.onClick = (_) -> {
             currentType = !currentType;
@@ -253,7 +255,14 @@ class ModBrowser extends VBox {
         isSearching = true;
         genMenuBarContent();
 
-        modGrid.removeAllComponents();
+        modGrid.walkComponents((c) -> {
+            if (Std.isOfType(c, DMAModComponent)) {
+                var mod:DMAModComponent = cast c;
+                mod.preDispose();
+            }
+            return true; 
+        });
+        modGrid.removeAllComponents(true);
 
         if (currentType) {
             var sort:GBSortType;
@@ -336,6 +345,7 @@ class ModBrowser extends VBox {
             var dialog = new ScrollDialog('Failed to search mods!', '##### Failed to search mods!\nError: ${data.error}}', true);
             dialog.showDialog();
             thisPageEmpty = true;
+            genMenuBarContent();
         } else {
             thisPageEmpty = data.mods.length == 0;
             for (modIdx in 0...data.mods.length) {
@@ -387,6 +397,11 @@ class ModBrowser extends VBox {
 
         if (thisPageEmpty && currentPage != 0)
             resetAndSearch();
+        else {
+            haxe.Timer.delay(() -> {
+                Gc.major();
+            }, 5000);
+        }
     }
 }
 

@@ -37,7 +37,7 @@
         <box text="Configuration" icon="resources/icons/gear.svg" style=".icon { width: 40px; height: 40px; }" id="configTab" percentWidth="100" percentHeight="100">
             <configuration />
         </box>
-        <box text="Mod Browser (Checking Internet...)" icon="resources/icons/play.svg" style=".icon { width: 40px; height: 40px; }" id="modBrowserTab" percentWidth="100" percentHeight="100">
+        <box text="Mod Browser" icon="resources/icons/play.svg" style=".icon { width: 40px; height: 40px; }" id="modBrowserTab" percentWidth="100" percentHeight="100">
             <modbrowser id="modBrowser"/>
         </box>
     </tabview>

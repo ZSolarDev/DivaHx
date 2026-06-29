@@ -30,6 +30,7 @@ class DMAModComponent extends VBox {
     public var authorBox:HBox;
     public var mainBox:HBox;
     public var mod:DMAMod;
+    public var authorImage:Image;
 
     public function new(mod:DMAMod, idx:Int = 0) {
         super();
@@ -138,7 +139,8 @@ class DMAModComponent extends VBox {
             authorBox.styleString = 'padding:5px; spacing:5px;';
             authorBox.horizontalAlign = 'left';
             var newData = Misc.circleify(bitmapData);
-            var authorImage:Image = new Image();
+            bitmapData.dispose();
+            authorImage = new Image();
             authorImage.resource = newData;
             authorImage.width = 32;
             authorImage.height = 32;
@@ -168,11 +170,15 @@ class DMAModComponent extends VBox {
 
     public function loadImage(url:String) {
         BitmapData.loadFromFile(url).onComplete((bitmapData:BitmapData) -> {
+            var resized = Misc.resizeBitmap(bitmapData, imageBox.width * 1.5 - 20, imageBox.height * 1.5 - 20);
+            bitmapData.dispose();
+
             imageBox.padding = 10;
             imageBox.paddingTop = 15;
             var processedData:BitmapData = mod.explicit
-                ? Misc.roundCorners(blurBitmap(bitmapData), 35)
-                : Misc.roundCorners(bitmapData, 35);
+                ? Misc.roundCorners(Misc.blurBitmap(resized), 8)
+                : Misc.roundCorners(resized, 8);
+            resized.dispose();
 
             imageBox.removeAllComponents();
             modImage = new Image();
@@ -221,15 +227,15 @@ class DMAModComponent extends VBox {
         });
     }
 
-    function blurBitmap(source:BitmapData):BitmapData {
-        var blurred = source.clone();
-        var blurFilter = new BlurFilter(32, 32, 2);
-        var bounds = new Rectangle(0, 0, blurred.width, blurred.height);
-        blurred.applyFilter(blurred, bounds, new Point(0, 0), blurFilter);
-        return blurred;
-    }
-
     public function getScaleValue(x:Float):Float {
         return (5.0902242040635786e-12 * x * x * x) + (-3.7549767260781715e-08 * x * x) + (9.3045094388797194e-05 * x) + 0.23974884399240393;
+    }
+
+    public function preDispose() {
+        Update.unregister(this);
+        modImage?.resource?.toImageData()?.dispose();
+        if (modImage != null) modImage.resource = null;
+        authorImage?.resource?.toImageData()?.dispose();
+        if (authorImage != null) authorImage.resource = null;
     }
 }

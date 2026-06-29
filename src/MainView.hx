@@ -3,7 +3,6 @@ package;
 import sys.thread.Thread;
 import haxe.ui.Toolkit;
 import hxFileManager.HttpManager;
-import haxe.Timer;
 import components.dialogs.ScrollDialog;
 import haxe.ui.notifications.NotificationType;
 import haxe.ui.notifications.NotificationManager;
@@ -43,9 +42,6 @@ class MainView extends VBox {
     public var oldConsole:Bool = false;
     public var modsWatcher:Int = -1;
     public var beganInvalid:Bool = false;
-    public var alreadyHeld:Bool = false;
-    public var hasInternet:Bool = false;
-    public var internetChecked:Bool = false;
     public static var modNameToMod:Map<String, String> = new Map<String, String>();
     public static var allMods:Array<String> = [];
     public static var enabledMods:Array<String> = [];
@@ -58,15 +54,7 @@ class MainView extends VBox {
         super();
         var isValid = Validate.isValidMMPath();
         modManagerTab.disabled = !isValid;
-        modBrowserTab.disabled = !isValid || !hasInternet;
-        if (!hasInternet && internetChecked)
-            modBrowserTab.text = 'Mod Browser (No Internet Connection)';
-        else if (!internetChecked)
-            modBrowserTab.text = 'Mod Browser (Checking Internet...)';
-        else
-            modBrowserTab.text = 'Mod Browser';
-        if (!hasInternet && mainTabs.pageIndex == 2)
-            mainTabs.pageIndex = 0;
+        modBrowserTab.disabled = !isValid;
         if (!isValid)
             beganInvalid = true;
         mainTabs.pageIndex = isValid ? 0 : 1;
@@ -80,12 +68,6 @@ class MainView extends VBox {
         githubButton.onClick = (_) -> {
             Sys.command('cmd /c start "" "https://github.com/ZSolarDev/DivaHX"');
         }
-        Thread.create(() -> {
-            new Timer(5000).run = () -> {
-                hasInternet = HttpManager.hasInternet;
-                internetChecked = true;
-            } 
-        });
         modList.onComponentEvent = (e:UIEvent) -> {
             var source = Reflect.field(e, 'source');
             if (e.type == ItemEvent.COMPONENT_EVENT && (source is Button) && cast(source, Button).id == 'colActions') {
@@ -229,15 +211,7 @@ class MainView extends VBox {
     public function update(dt:Float) {
         var isValid = Validate.isValidMMPath();
         modManagerTab.disabled = !isValid;
-        modBrowserTab.disabled = !isValid || !hasInternet;
-        if (!hasInternet && mainTabs.pageIndex == 2)
-            mainTabs.pageIndex = 0;
-        if (!hasInternet && internetChecked)
-            modBrowserTab.text = 'Mod Browser (No Internet Connection)';
-        else if (!internetChecked)
-            modBrowserTab.text = 'Mod Browser (Checking Internet...)';
-        else
-            modBrowserTab.text = 'Mod Browser';
+        modBrowserTab.disabled = !isValid;
         if (isValid) {
             if (mainTabs.pageIndex < 2)
                 modBrowser.hidden = true;

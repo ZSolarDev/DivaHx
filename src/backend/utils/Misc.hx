@@ -1,5 +1,8 @@
 package backend.utils;
 
+import openfl.geom.Point;
+import openfl.geom.Rectangle;
+import openfl.filters.BlurFilter;
 import haxe.Int64;
 import openfl.geom.Matrix;
 import openfl.display.Shape;
@@ -136,6 +139,31 @@ class Misc {
         roundedData.draw(shape);
 
         return roundedData;
+    }
+
+    public static function resizeBitmap(source:BitmapData, targetWidth:Float, targetHeight:Float):BitmapData {
+        var scale = Math.min(targetWidth / source.width, targetHeight / source.height);
+        var scaledWidth = source.width * scale;
+        var scaledHeight = source.height * scale;
+
+        var shape = new Shape();
+        var matrix = new Matrix();
+        matrix.scale(scale, scale);
+        shape.graphics.beginBitmapFill(source, matrix, false, true);
+        shape.graphics.drawRect(0, 0, scaledWidth, scaledHeight);
+        shape.graphics.endFill();
+
+        var resized = new BitmapData(Std.int(scaledWidth), Std.int(scaledHeight), true, 0x00000000);
+        resized.draw(shape);
+        return resized;
+    }
+
+    public static function blurBitmap(source:BitmapData):BitmapData {
+        var blurred = source;
+        var blurFilter = new BlurFilter(32, 32, 2);
+        var bounds = new Rectangle(0, 0, blurred.width, blurred.height);
+        blurred.applyFilter(blurred, bounds, new Point(0, 0), blurFilter);
+        return blurred;
     }
 
     public static function formatBytes64(bytes:Int64):String {
