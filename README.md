@@ -130,7 +130,7 @@
     </tr>
     <tr>
       <td align="center">
-        There is also a <em>Play</em> button, that lets you launch <strong><em>Project DIVA Mega Mix+</em></strong> from either Steam or the Executable, but both run with mods.
+        There is also a <em>Play</em> section, that lets you launch <strong><em>Project DIVA Mega Mix+</em></strong> from either Steam or the Executable, but both run with mods.
       </td>
     </tr>
     <tr>
