@@ -1,6 +1,9 @@
 > [!WARNING]
 > *This is NOT compatible with [**Diva Mod Manager**](https://github.com/TekkaGB/DivaModManager)! If you edit your mod list with DivaHx, Diva Mod Manager will overwrite it the next time it opens.*
 
+> [!TIP]
+> Report any issues in the [**Issues section**](https://github.com/ZSolarDev/DivaHx/issues). Also, all contributors are welcome!
+
 <div align="center">
 <img width="600" src="https://raw.githubusercontent.com/ZSolarDev/DivaHx/refs/heads/main/resources/logo/Logo-Flat.png">
 <h2>
