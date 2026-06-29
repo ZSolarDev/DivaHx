@@ -120,7 +120,7 @@
     <tr>
       <td align="center">
         Not all mods have extra options to configure or a <em>Mod Info</em> section. It all depends on the mods <code>config.toml</code> file, if it even has one.
-        <br>
+        <br><br>
         You can also enable or disable all mods, and enable or disable if the console opens with the game.
       </td>
     </tr>
