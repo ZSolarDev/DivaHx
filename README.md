@@ -72,11 +72,11 @@
       <td>
         You can click on a mod to see more info. In that menu, you can see:
         <ul>
-          <li>the images uploaded with the mod</li>
-          <li>the description</li>
-          <li>if it's installed already</li>
-          <li>its dependencies</li>
-          <li>if a dependency is installed already</li>
+          <li>The images uploaded with the mod</li>
+          <li>The description</li>
+          <li>If it's installed already</li>
+          <li>Its dependencies</li>
+          <li>If a dependency is installed already</li>
         </ul>
       </td>
     </tr>
