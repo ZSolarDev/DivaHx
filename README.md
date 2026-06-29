@@ -4,11 +4,11 @@
 <div align="center">
 <img width="600" src="https://raw.githubusercontent.com/ZSolarDev/DivaHx/refs/heads/main/resources/logo/Logo-Flat.png">
 <h2>
-  <img width="121" src="https://img.shields.io/github/commit-activity/t/ZSolarDev/DivaHx?color=F6871F">
-  <img width="270" src="https://img.shields.io/github/downloads/ZSolarDev/DivaHx/total?color=F6871F">
-  <img width="118" src="https://img.shields.io/github/license/ZSolarDev/DivaHx?color=F6871F">
+  <img src="https://img.shields.io/github/commit-activity/t/ZSolarDev/DivaHx?color=F6871F">
+  <img src="https://img.shields.io/github/downloads/ZSolarDev/DivaHx/total?color=F6871F">
+  <img src="https://img.shields.io/github/license/ZSolarDev/DivaHx?color=F6871F">
 </h2>
-  
+
 ### *A mod manager for [Hatsune Miku: Project DIVA Mega Mix+](https://miku.sega.com/megamixplus/index.html) built in [Haxe](https://haxe.org).*
   
 [***Welcome***](#welcome-to-divahx) • [***Setup***](#setup) • [***Features***](#features) • [***Planned Features***](#planned-features) • [***Credits***](#credits)
