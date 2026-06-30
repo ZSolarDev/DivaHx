@@ -166,5 +166,5 @@
 | Name | Role |
 | :--- | :--- |
 | [***ZSolarDev***](https://github.com/ZSolarDev) | Main Developer |
-| [***Aura***](https://github.com/Aura42069) | Tester |
+| [***Aura***](https://github.com/Aura39) | Tester |
 | ***Shay*** *(@sav1or_shay on discord)* | Tester  |
