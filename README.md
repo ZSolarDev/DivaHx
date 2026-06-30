@@ -90,11 +90,15 @@
     <tr>
       <td>
         <h2>Managing mods</h2>
-        <strong><em>DivaHx</em></strong> Allows you to configure the mods you have installed.
+        <strong><em>DivaHx</em></strong> Allows you to manage your mods by letting you:
         <ul>
-          <li>Input search queries</li>
-          <li>Change how it sorts mods</li>
-          <li>Filter mods by their post type</li>
+          <li>Search for mods by name</li>
+          <li>Change if a mod is enabled or disabled</li>
+          <li>Delete a mod</li>
+          <li>Configure a mod</li>
+          <li>View a mods metadata</li>
+          <li>See the size of a mod</li>
+          <li>Drag and drop a mod to change its priority in relation to other mods</li>
         </ul>
       </td>
     </tr>
