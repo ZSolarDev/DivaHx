@@ -23,7 +23,7 @@
 <br>
 
 # Setup
-- Install ***DIVA Mod loader***. Refer to the [*Installation Guilde*](https://github.com/blueskythlikesclouds/DivaModLoader#Installation).
+- Install ***DIVA Mod Loader***. Refer to the [*Installation Guilde*](https://github.com/blueskythlikesclouds/DivaModLoader#Installation).
 - Download and extract the latest release of ***DivaHx*** from the [*Releases page*](https://github.com/ZSolarDev/DivaHx/releases).
 - Open `DivaHx.exe`. It will try to automatically find your ***Project DIVA Mega Mix+*** installation. If it can't find it, it opens to the *Configuration* menu. In that case, press the *Set MM+ Path* button. It will open a prompt where you can select the path to your ***Project DIVA Mega Mix+*** installation.
   - Don't know where it is? Refer to [*the section below.*](##where-to-find-your-hatsune-miku-project-diva-mega-mix-installation)
